@@ -107,23 +107,30 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
       }
     }
 
-    const paddingIndent = node.depth === 0 ? 0 : node.depth === 1 ? 8 : node.depth === 2 ? 24 : 40;
+    const paddingIndent =
+      node.depth === 0
+        ? '0px'
+        : node.depth === 1
+        ? 'clamp(6px, 1.5vw, 12px)'
+        : node.depth === 2
+        ? 'clamp(12px, 3vw, 24px)'
+        : 'clamp(18px, 4.5vw, 36px)';
 
     return (
       <div
         key={node.id}
-        className="w-full flex flex-col my-1.5"
+        className="w-full flex flex-col my-1 sm:my-1.5"
         style={
           isRtl
-            ? { paddingRight: `${paddingIndent}px` }
-            : { paddingLeft: `${paddingIndent}px` }
+            ? { paddingRight: paddingIndent }
+            : { paddingLeft: paddingIndent }
         }
       >
         {/* Node Card */}
         <div
           id={`modern-node-${node.id}`}
           onClick={() => onSelectNodeDetails(node)}
-          className={`group relative rounded-2xl border transition-all duration-200 cursor-pointer ${
+          className={`group relative rounded-xl sm:rounded-2xl border transition-all duration-200 cursor-pointer ${
             node.isGroup
               ? 'bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700'
               : 'bg-white/80 dark:bg-slate-900/60 border-slate-100 dark:border-slate-800/80 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs'
@@ -140,15 +147,15 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                 }
           }
         >
-          <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="p-2.5 sm:p-3.5 md:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3">
             {/* Start: Icon, Expand toggle, Name, Badges */}
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="flex items-start sm:items-center gap-2 sm:gap-2.5 min-w-0 flex-1 w-full sm:w-auto">
               {node.isGroup ? (
                 <button
                   type="button"
                   id={`btn-collapse-${node.id}`}
                   onClick={(e) => toggleCollapse(node.id, e)}
-                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors shrink-0 cursor-pointer"
+                  className="p-1 sm:p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors shrink-0 cursor-pointer"
                 >
                   {isCollapsed ? (
                     isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
@@ -157,19 +164,19 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                   )}
                 </button>
               ) : (
-                <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0 mt-0.5 sm:mt-0">
                   <Coins className="w-3.5 h-3.5" style={{ color: palette.primary }} />
                 </div>
               )}
 
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                   <span
-                    className={`font-bold truncate ${
+                    className={`font-bold truncate leading-tight ${
                       node.depth === 0
-                        ? 'text-base sm:text-lg text-slate-900 dark:text-white'
+                        ? 'text-sm xs:text-base sm:text-lg text-slate-900 dark:text-white'
                         : node.isGroup
-                        ? 'text-sm sm:text-base text-slate-800 dark:text-slate-100'
+                        ? 'text-xs xs:text-sm sm:text-base text-slate-800 dark:text-slate-100'
                         : 'text-xs sm:text-sm text-slate-700 dark:text-slate-200'
                     }`}
                   >
@@ -177,13 +184,13 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                   </span>
 
                   {node.isGroup && (
-                    <span className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    <span className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
                       {node.children.length} {isEn ? 'items' : 'شاخه'}
                     </span>
                   )}
 
                   {!node.isGroup && node.quantity > 0 && (
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                    <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                       ({formatNumberWithCommas(node.quantity, settings.usePersianDigits, 2, lang)} {node.unit} @{' '}
                       {formatCurrency(node.unitPrice, settings.currencyUnit, false, settings.usePersianDigits, settings.privacyMode, lang)})
                     </span>
@@ -191,7 +198,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                 </div>
 
                 {/* Percentage metrics line */}
-                <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 dark:text-slate-400 flex-wrap">
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 flex-wrap">
                   {settings.showPercentOfTotal && (
                     <span className="inline-flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
                       {formatPercentage(node.percentOfTotal, settings.decimalPlaces, settings.usePersianDigits, lang)}{' '}
@@ -204,7 +211,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                       <span>•</span>
                       <span>
                         {formatPercentage(node.percentOfGroup, settings.decimalPlaces, settings.usePersianDigits, lang)}{' '}
-                        {isEn ? 'of parent group' : 'از گروه'}
+                        {isEn ? 'of parent' : 'از گروه'}
                       </span>
                     </>
                   )}
@@ -213,10 +220,10 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
             </div>
 
             {/* End: Value & Action Buttons */}
-            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-800/80">
+            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-800/80">
               {/* Total Value */}
               <div className={isRtl ? 'text-right sm:text-left' : 'text-left sm:text-right'}>
-                <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white block">
+                <span className="text-xs xs:text-sm sm:text-base font-extrabold text-slate-900 dark:text-white block truncate">
                   {formatCurrency(
                     node.totalValue,
                     settings.currencyUnit,
@@ -230,7 +237,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
 
               {/* Action Buttons Toolbar */}
               <div
-                className="flex items-center gap-1 shrink-0"
+                className="flex items-center gap-0.5 sm:gap-1 shrink-0"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Add Child */}
@@ -239,9 +246,9 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                   id={`btn-add-child-${node.id}`}
                   onClick={() => onAddChildNode(node)}
                   title={tCommon.addChild[lang]}
-                  className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
 
                 {/* Edit (if not root) */}
@@ -251,9 +258,9 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                     id={`btn-edit-${node.id}`}
                     onClick={() => onEditNode(node)}
                     title={tCommon.edit[lang]}
-                    className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="p-1 sm:p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </button>
                 )}
 
@@ -264,9 +271,9 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                     id={`btn-move-${node.id}`}
                     onClick={() => onMoveNode(node)}
                     title={tCommon.move[lang]}
-                    className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="p-1 sm:p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
-                    <Move className="w-3.5 h-3.5" />
+                    <Move className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </button>
                 )}
 
@@ -277,9 +284,9 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                     id={`btn-delete-${node.id}`}
                     onClick={() => onDeleteNode(node)}
                     title={tCommon.delete[lang]}
-                    className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                    className="p-1 sm:p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </button>
                 )}
 
@@ -289,9 +296,9 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                   id={`btn-details-${node.id}`}
                   onClick={() => onSelectNodeDetails(node)}
                   title={tCommon.details[lang]}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  <Info className="w-3.5 h-3.5" />
+                  <Info className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
               </div>
             </div>
@@ -326,10 +333,10 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
   return (
     <div className="w-full pb-16">
       {/* Control Bar: Search (if no external search), Expand/Collapse, Sorting */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+      <div className="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
         {/* Search Input or Filter Status */}
         {!hasExternalSearch ? (
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-0">
             <Search
               className={`w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 ${
                 isRtl ? 'right-3' : 'left-3'
@@ -358,7 +365,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                 </span>
               </span>
             ) : (
-              <span className="text-slate-500 dark:text-slate-400 font-medium">
+              <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">
                 {isEn ? 'Modern Tree Hierarchy' : 'ساختار درختی و سلسله‌مراتبی'}
               </span>
             )}
@@ -366,23 +373,25 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
         )}
 
         {/* Expand / Collapse buttons & Sort */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            id="btn-expand-all"
-            onClick={expandAll}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            {isEn ? 'Expand All' : 'گسترش همه'}
-          </button>
-          <button
-            type="button"
-            id="btn-collapse-all"
-            onClick={collapseAll}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            {isEn ? 'Collapse All' : 'جمع‌کردن همه'}
-          </button>
+        <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              id="btn-expand-all"
+              onClick={expandAll}
+              className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              {isEn ? 'Expand All' : 'گسترش همه'}
+            </button>
+            <button
+              type="button"
+              id="btn-collapse-all"
+              onClick={collapseAll}
+              className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              {isEn ? 'Collapse All' : 'جمع‌کردن همه'}
+            </button>
+          </div>
 
           {/* Sort Selector */}
           <div
@@ -399,7 +408,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                   field: e.target.value as SortField,
                 })
               }
-              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-hidden cursor-pointer"
+              className="text-[11px] sm:text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5 text-slate-700 dark:text-slate-200 focus:outline-hidden cursor-pointer"
             >
               {sortFields.map((f) => (
                 <option key={f.field} value={f.field}>
@@ -422,7 +431,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
                   ? (isEn ? 'Ascending' : 'صعودی')
                   : (isEn ? 'Descending' : 'نزولی')
               }
-              className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="p-1 sm:p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
             </button>

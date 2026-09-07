@@ -59,54 +59,54 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
   }, [rootCalculated]);
 
   return (
-    <div className="w-full pb-16 flex flex-col gap-6">
+    <div className="w-full pb-16 flex flex-col gap-4 sm:gap-6">
       {/* Top Banner: Tree Health & Mathematical Integrity */}
       <div
-        className={`p-5 sm:p-6 rounded-3xl border transition-all ${
+        className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all ${
           health.isValid
             ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60'
             : 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60'
         }`}
       >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
                 health.isValid
                   ? 'bg-emerald-600 text-white'
                   : 'bg-rose-600 text-white'
               }`}
             >
               {health.isValid ? (
-                <ShieldCheck className="w-6 h-6" />
+                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
               ) : (
-                <AlertCircle className="w-6 h-6" />
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               )}
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-sm sm:text-lg font-bold text-slate-900 dark:text-white">
                 {health.isValid
                   ? (isEn ? 'Bottom-up audit is fully verified and mathematically sound' : 'محاسبات پایین‌به‌بالا کاملاً تراز و معتبر است')
                   : (isEn ? 'Mathematical discrepancy found in hierarchy' : 'مغایرت در محاسبات سلسله‌مراتبی یافت شد')}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+              <p className="text-[11px] sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
                 {isEn ? 'Root Total: ' : 'ارزش ریشه: '}
-                {formatCurrency(health.rootTotal, settings.currencyUnit, false, settings.usePersianDigits, settings.privacyMode, lang)} |{' '}
+                {formatCurrency(health.rootTotal, settings.currencyUnit, true, settings.usePersianDigits, settings.privacyMode, lang)} |{' '}
                 {isEn ? 'Direct Children Sum: ' : 'مجموع فرزندان مستقیم: '}
-                {formatCurrency(health.directChildrenSum, settings.currencyUnit, false, settings.usePersianDigits, settings.privacyMode, lang)}
+                {formatCurrency(health.directChildrenSum, settings.currencyUnit, true, settings.usePersianDigits, settings.privacyMode, lang)}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
             <button
               type="button"
               id="btn-print-portfolio-report"
               onClick={() => window.print()}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition-colors text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition-colors text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
               title={isEn ? 'Print or Save Report as PDF' : 'چاپ یا ذخیره گزارش به‌صورت PDF'}
             >
-              <Printer className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{isEn ? 'Print / PDF' : 'چاپ / گزارش PDF'}</span>
             </button>
 
@@ -114,9 +114,9 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
               type="button"
               id="btn-export-backup-json"
               onClick={onExportBackup}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
             >
-              <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
               <span>{isEn ? 'Export (JSON)' : 'خروجی (JSON)'}</span>
             </button>
           </div>
@@ -124,26 +124,26 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
       </div>
 
       {/* Grid: Top 5 Holdings & Group Allocations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Top 5 Holdings Card */}
-        <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="w-5 h-5 text-amber-500" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+        <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Award className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
+            <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-base">
               {isEn ? 'Top 5 Holdings by Total Value' : '۵ دارایی برتر از نظر ارزش مالی'}
             </h3>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 sm:gap-3">
             {topHoldings.map((leaf, index) => {
               return (
                 <div
                   key={leaf.id}
                   onClick={() => onSelectNodeDetails(leaf)}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                  className="flex items-center justify-between p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 text-xs font-bold flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0 shadow-xs">
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white dark:bg-slate-700 text-[11px] sm:text-xs font-bold flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0 shadow-xs">
                       {formatNumberWithCommas(index + 1, settings.usePersianDigits, 0, lang)}
                     </span>
                     <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 truncate">
@@ -151,7 +151,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white">
                       {formatCurrency(
                         leaf.totalValue,
@@ -162,7 +162,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
                         lang
                       )}
                     </span>
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                    <span className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 min-w-8 text-left">
                       {formatPercentage(leaf.percentOfTotal, settings.decimalPlaces, settings.usePersianDigits, lang)}
                     </span>
                   </div>
@@ -173,15 +173,15 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
         </div>
 
         {/* Categories Distribution Card */}
-        <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <PieChart className="w-5 h-5 text-blue-600" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+        <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-base">
               {isEn ? 'Percentage Allocation by Category' : 'توزیع درصدی گروه‌های دارایی'}
             </h3>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 sm:gap-3">
             {rootCalculated.children.map((group) => {
               const palette = getPaletteForNode(group.name, group.categoryTag, settings.customAssetColors);
 
@@ -189,14 +189,14 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
                 <div
                   key={group.id}
                   onClick={() => onSelectNodeDetails(group)}
-                  className="flex flex-col gap-1.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                  className="flex flex-col gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                    <span className="font-bold text-slate-800 dark:text-slate-200 truncate text-xs sm:text-sm">
                       {group.name}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 dark:text-white">
+                      <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
                         {formatCurrency(
                           group.totalValue,
                           settings.currencyUnit,
@@ -206,7 +206,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
                           lang
                         )}
                       </span>
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                      <span className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 min-w-8 text-left">
                         {formatPercentage(group.percentOfTotal, settings.decimalPlaces, settings.usePersianDigits, lang)}
                       </span>
                     </div>
@@ -229,38 +229,38 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
       </div>
 
       {/* Hierarchy Depth Statistics */}
-      <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col">
-        <div className="flex items-center gap-2 mb-4">
-          <Layers className="w-5 h-5 text-indigo-600" />
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col">
+        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+          <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+          <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-base">
             {isEn ? 'Tree Depth Distribution' : 'آمار سطوح عمق درخت (Tree Depth Distribution)'}
           </h3>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
-            <span className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1">
               {isEn ? 'Total Registered Nodes' : 'کل گره‌های ثبت شده'}
             </span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
               {formatNumberWithCommas(health.totalNodeCount, settings.usePersianDigits, 0, lang)}
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
-            <span className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1">
               {isEn ? 'Level 1 Categories' : 'دسته‌های سطح ۱'}
             </span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
               {formatNumberWithCommas(depthStats[1] || 0, settings.usePersianDigits, 0, lang)}
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
-            <span className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1">
               {isEn ? 'Sub-branches (L2+)' : 'زیرشاخه‌ها (سطح ۲ و عمیق‌تر)'}
             </span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">
               {formatNumberWithCommas(
                 (health.totalNodeCount - 1) - (depthStats[1] || 0),
                 settings.usePersianDigits,
@@ -270,11 +270,11 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
-            <span className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex flex-col">
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1">
               {isEn ? 'Zero Value Items' : 'دارایی‌های با ارزش صفر'}
             </span>
-            <span className={`text-xl sm:text-2xl font-black ${health.zeroValueCount > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
+            <span className={`text-lg sm:text-2xl font-black ${health.zeroValueCount > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
               {formatNumberWithCommas(health.zeroValueCount, settings.usePersianDigits, 0, lang)}
             </span>
           </div>

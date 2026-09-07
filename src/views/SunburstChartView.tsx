@@ -147,13 +147,13 @@ export const SunburstChartView: React.FC<SunburstProps> = ({
   return (
     <div className="w-full pb-16 flex flex-col items-center">
       {/* Sunburst Canvas Card */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col items-center">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col items-center">
         {/* Reset Zoom Button */}
         {currentRoot.id !== rootCalculated.id && (
           <button
             type="button"
             onClick={() => setActiveRoot(rootCalculated)}
-            className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300 hover:bg-blue-100 transition-colors text-xs font-semibold cursor-pointer"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300 hover:bg-blue-100 transition-colors text-[11px] sm:text-xs font-semibold cursor-pointer"
           >
             <ZoomOut className="w-3.5 h-3.5" />
             <span>{isEn ? 'Reset to Root' : 'بازگشت به ریشه'}</span>
@@ -161,7 +161,7 @@ export const SunburstChartView: React.FC<SunburstProps> = ({
         )}
 
         {/* SVG Sunburst */}
-        <div className="relative w-full aspect-square max-w-[480px] flex items-center justify-center my-2">
+        <div className="relative w-full aspect-square max-w-[480px] flex items-center justify-center my-1 sm:my-2">
           <svg
             viewBox="-240 -240 480 480"
             className="w-full h-full transform -rotate-90 select-none"
@@ -212,12 +212,12 @@ export const SunburstChartView: React.FC<SunburstProps> = ({
 
           {/* Center Text Overlay */}
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-6 max-w-[120px] mx-auto"
+            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4 max-w-[105px] sm:max-w-[125px] mx-auto"
           >
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate w-full">
+            <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 truncate w-full">
               {currentRoot.name}
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
               {formatCurrency(
                 currentRoot.totalValue,
                 settings.currencyUnit,
@@ -231,27 +231,27 @@ export const SunburstChartView: React.FC<SunburstProps> = ({
         </div>
 
         {/* Hovered / Active Node Inspector Panel */}
-        <div className="w-full mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs sm:text-sm">
+        <div className="w-full mt-3 sm:mt-4 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 sm:gap-3 text-xs sm:text-sm">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900 dark:text-slate-100 truncate">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="font-bold text-slate-900 dark:text-slate-100 truncate text-xs sm:text-sm">
                 {displayNode.name}
               </span>
               {displayNode.isGroup && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                <span className="text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                   {displayNode.children.length} {isEn ? 'sub-branches' : 'زیرشاخه'}
                 </span>
               )}
             </div>
-            <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-              {isEn ? 'Value: ' : 'ارزش: '}{formatCurrency(displayNode.totalValue, settings.currencyUnit, false, settings.usePersianDigits, settings.privacyMode, lang)} ({isEn ? 'Share: ' : 'سهم: '}{formatPercentage(displayNode.percentOfTotal, settings.decimalPlaces, settings.usePersianDigits, lang)})
+            <div className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs mt-0.5 truncate">
+              {isEn ? 'Value: ' : 'ارزش: '}{formatCurrency(displayNode.totalValue, settings.currencyUnit, true, settings.usePersianDigits, settings.privacyMode, lang)} ({isEn ? 'Share: ' : 'سهم: '}{formatPercentage(displayNode.percentOfTotal, settings.decimalPlaces, settings.usePersianDigits, lang)})
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => onSelectNodeDetails(displayNode)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 shrink-0 text-xs cursor-pointer"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 shrink-0 text-[11px] sm:text-xs cursor-pointer"
           >
             <Info className="w-3.5 h-3.5" />
             <span>{isEn ? 'Details' : 'شناسنامه'}</span>

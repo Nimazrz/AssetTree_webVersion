@@ -110,19 +110,19 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         </div>
 
         {/* Categorized Menu Tabs Bar */}
-        <div className="flex items-center px-4 pt-2.5 pb-2 gap-1.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40">
+        <div className="flex items-center px-3 sm:px-4 pt-2.5 pb-2 gap-1 sm:gap-1.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 overflow-x-auto no-scrollbar">
           {/* Tab 1: Appearance */}
           <button
             type="button"
             id="tab-settings-appearance"
             onClick={() => setActiveTab('appearance')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'appearance'
                 ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs border border-slate-200/80 dark:border-slate-700'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Palette className="w-4 h-4" />
+            <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t.tabAppearance[lang]}</span>
           </button>
 
@@ -131,13 +131,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             type="button"
             id="tab-settings-data"
             onClick={() => setActiveTab('data')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'data'
                 ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs border border-slate-200/80 dark:border-slate-700'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
             }`}
           >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400" />
             <span>{t.tabDataTools[lang]}</span>
           </button>
 
@@ -146,19 +146,19 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             type="button"
             id="tab-settings-backup"
             onClick={() => setActiveTab('backup')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'backup'
                 ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs border border-slate-200/80 dark:border-slate-700'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
             }`}
           >
-            <Database className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <Database className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400" />
             <span>{t.tabBackupStorage[lang]}</span>
           </button>
         </div>
 
         {/* Content Body based on Active Tab */}
-        <div className="p-5 overflow-y-auto space-y-5 text-xs sm:text-sm flex-1">
+        <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 sm:space-y-5 text-xs sm:text-sm flex-1">
           {/* TAB 1: APPEARANCE & DISPLAY */}
           {activeTab === 'appearance' && (
             <div className="space-y-5 animate-in fade-in duration-150">

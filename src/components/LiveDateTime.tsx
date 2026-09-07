@@ -73,17 +73,17 @@ export const LiveDateTime: React.FC<LiveDateTimeProps> = ({
     >
       <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
       <div className="flex items-center gap-1 sm:gap-1.5 text-xs font-semibold leading-none">
-        {/* Live Clock */}
+        {/* Live Clock - Always visible */}
         <span className="tabular-nums text-slate-800 dark:text-slate-100 font-bold">
           {displayTime}
         </span>
-        <span className="text-slate-300 dark:text-slate-600 font-light select-none">|</span>
+        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 font-light select-none">|</span>
         {/* Date on desktop (full) */}
-        <span className="hidden md:inline text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300">
+        <span className="hidden lg:inline text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300">
           {displayDateFull}
         </span>
-        {/* Date on mobile/tablet (compact) */}
-        <span className="md:hidden text-[11px] font-medium text-slate-600 dark:text-slate-300">
+        {/* Date on tablet/medium (compact) */}
+        <span className="hidden sm:inline lg:hidden text-[11px] font-medium text-slate-600 dark:text-slate-300">
           {displayDateMedium}
         </span>
       </div>

@@ -45,29 +45,29 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
         {/* Brand & Action Icons */}
         <div className="flex items-center justify-between gap-2">
           {/* Logo & Title */}
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-sm shrink-0">
-              <FolderTree className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-linear-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-sm shrink-0">
+              <FolderTree className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
+              <h1 className="text-sm xs:text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
                 {TRANSLATIONS.appTitle[lang]}
               </h1>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[130px] xs:max-w-[200px] sm:max-w-none">
                 {TRANSLATIONS.appSubtitle[lang]}
               </p>
             </div>
           </div>
 
           {/* Quick Action Toolbar */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Privacy Mode Toggle */}
             <button
               type="button"
               id="btn-privacy-toggle"
               onClick={onTogglePrivacy}
               title={settings.privacyMode ? tTop.privacyOn[lang] : tTop.privacyOff[lang]}
-              className={`p-2 rounded-xl transition-all cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer ${
                 settings.privacyMode
                   ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 ring-1 ring-amber-400/40'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -83,7 +83,7 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
               onClick={onUndo}
               disabled={undoCount === 0}
               title={tTop.undo[lang]}
-              className={`relative p-2 rounded-xl transition-all cursor-pointer ${
+              className={`relative p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer ${
                 undoCount > 0
                   ? 'text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                   : 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-50'
@@ -109,7 +109,7 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
               id="btn-open-settings"
               onClick={onOpenSettings}
               title={tTop.settings[lang]}
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <Settings className="w-4 h-4" />
             </button>

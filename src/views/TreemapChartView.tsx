@@ -128,7 +128,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
               <button
                 type="button"
                 onClick={() => handleBreadcrumbClick(i + 1)}
-                className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+                className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-colors cursor-pointer ${
                   i === drilldownPath.length - 2
                     ? 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -140,7 +140,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
           ))}
         </div>
 
-        <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+        <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
           <span>
             {isEn
               ? `Sub-items: ${tiles.length}`
@@ -150,9 +150,9 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
       </div>
 
       {/* Treemap Container */}
-      <div className="relative w-full h-[520px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 p-1.5 shadow-inner">
+      <div className="relative w-full h-[360px] xs:h-[420px] sm:h-[480px] md:h-[540px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 p-1.5 shadow-inner">
         {tiles.length === 0 ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 text-xs sm:text-sm">
             <span>{isEn ? 'No valid sub-items found to display' : 'هیچ زیرمجموعه یا دارایی معتبری برای نمایش وجود ندارد'}</span>
           </div>
         ) : (
@@ -165,7 +165,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
               <div
                 key={node.id}
                 onClick={() => handleTileClick(node)}
-                className="absolute p-1 transition-transform duration-150 hover:z-10 group cursor-pointer"
+                className="absolute p-0.5 sm:p-1 transition-transform duration-150 hover:z-10 group cursor-pointer"
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
@@ -174,7 +174,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
                 }}
               >
                 <div
-                  className="w-full h-full rounded-xl p-2 sm:p-2.5 flex flex-col justify-between overflow-hidden shadow-xs border border-white/20 hover:scale-[1.01] transition-all"
+                  className="w-full h-full rounded-lg sm:rounded-xl p-1.5 sm:p-2.5 flex flex-col justify-between overflow-hidden shadow-xs border border-white/20 hover:scale-[1.01] transition-all"
                   style={{
                     backgroundColor: palette.primary,
                     color: '#ffffff',
@@ -184,7 +184,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
                   <div className="flex items-start justify-between gap-1">
                     <span
                       className={`font-bold leading-snug drop-shadow-xs truncate ${
-                        isLarge ? 'text-xs sm:text-sm' : isMedium ? 'text-[11px]' : 'text-[9px]'
+                        isLarge ? 'text-xs sm:text-sm' : isMedium ? 'text-[10px] sm:text-[11px]' : 'text-[9px]'
                       }`}
                     >
                       {node.name}
@@ -198,7 +198,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
                   {/* Middle / Bottom: Values & Percentage */}
                   {isMedium && (
                     <div className="mt-auto pt-1 flex flex-col">
-                      <span className="text-[10px] sm:text-xs font-black tracking-tight drop-shadow-xs">
+                      <span className="text-[9px] sm:text-xs font-black tracking-tight drop-shadow-xs truncate">
                         {formatCurrency(
                           node.totalValue,
                           settings.currencyUnit,
@@ -208,7 +208,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
                           lang
                         )}
                       </span>
-                      <span className="text-[10px] opacity-90 font-medium">
+                      <span className="text-[9px] sm:text-[10px] opacity-90 font-medium truncate">
                         {formatPercentage(
                           node.percentOfTotal,
                           settings.decimalPlaces,
@@ -227,7 +227,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
       </div>
 
       {/* Footer info */}
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-2">
+      <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 px-2">
         <span>
           {isEn
             ? 'Rectangle area represents asset value proportion relative to branch'
@@ -236,7 +236,7 @@ export const TreemapChartView: React.FC<TreemapProps> = ({
         <button
           type="button"
           onClick={() => onSelectNodeDetails(currentNode)}
-          className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+          className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer shrink-0"
         >
           <Info className="w-3.5 h-3.5" />
           <span>{isEn ? 'View Current Group Profile' : 'مشاهده مشخصات گروه جاری'}</span>
