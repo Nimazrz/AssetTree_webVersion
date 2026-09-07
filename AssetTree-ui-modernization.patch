@@ -1,0 +1,679 @@
+diff --git a/app/src/main/java/com/example/MainActivity.kt b/app/src/main/java/com/example/MainActivity.kt
+index e85f45d..2cc8c56 100644
+--- a/app/src/main/java/com/example/MainActivity.kt
++++ b/app/src/main/java/com/example/MainActivity.kt
+@@ -5,6 +5,11 @@ import androidx.activity.ComponentActivity
+ import androidx.activity.compose.setContent
+ import androidx.activity.enableEdgeToEdge
+ import androidx.activity.viewModels
++import androidx.compose.animation.AnimatedContentTransitionScope
++import androidx.compose.animation.core.tween
++import androidx.compose.animation.fadeIn
++import androidx.compose.animation.fadeOut
++import androidx.compose.animation.togetherWith
+ import androidx.compose.foundation.background
+ import androidx.compose.foundation.isSystemInDarkTheme
+ import androidx.compose.foundation.layout.*
+@@ -154,10 +159,18 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+                         CircularProgressIndicator(color = AppTheme.colors.primary)
+                     }
+                 } else {
+-                    when (activeView) {
++                    androidx.compose.animation.AnimatedContent(
++                        targetState = activeView,
++                        transitionSpec = {
++                            (fadeIn(animationSpec = tween(220)) + androidx.compose.animation.scaleIn(initialScale = 0.98f, animationSpec = tween(220))) togetherWith
++                                fadeOut(animationSpec = tween(120))
++                        },
++                        label = "activeViewSwitch"
++                    ) { view ->
++                    when (view) {
+                         AppViewMode.TREE -> {
+                             ModernTreeView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootCalculated = root,
+                                 settings = displaySettings,
+@@ -175,7 +188,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+ 
+                         AppViewMode.CLASSIC_TREE -> {
+                             ClassicTreeView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootCalculated = root,
+                                 settings = displaySettings,
+@@ -193,7 +206,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+ 
+                         AppViewMode.CHART -> {
+                             SunburstChartView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootNode = root,
+                                 settings = displaySettings,
+@@ -203,7 +216,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+ 
+                         AppViewMode.BAR_CHART -> {
+                             BarChartView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootCalculated = root,
+                                 settings = displaySettings,
+@@ -212,7 +225,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+                         }
+                         AppViewMode.PIE_CHART -> {
+                             PieChartView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootCalculated = root,
+                                 settings = displaySettings,
+@@ -222,7 +235,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+ 
+                         AppViewMode.TREEMAP -> {
+                             com.example.ui.views.TreemapChartView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootCalculated = root,
+                                 settings = displaySettings,
+@@ -232,7 +245,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+ 
+                         AppViewMode.ANALYTICS -> {
+                             AnalyticsDashboardView(
+-                                activeView = activeView,
++                                activeView = view,
+                                 onSelectView = { viewModel.setActiveView(it) },
+                                 rootCalculated = root,
+                                 allCalculated = allCalculated,
+@@ -241,6 +254,7 @@ fun AssetTreeMainScreen(viewModel: AssetTreeViewModel, isDark: Boolean) {
+                             )
+                         }
+                     }
++                    }
+                 }
+             }
+         }
+diff --git a/app/src/main/java/com/example/ui/components/AnimatedAmountText.kt b/app/src/main/java/com/example/ui/components/AnimatedAmountText.kt
+new file mode 100644
+index 0000000..67e889f
+--- /dev/null
++++ b/app/src/main/java/com/example/ui/components/AnimatedAmountText.kt
+@@ -0,0 +1,53 @@
++package com.example.ui.components
++
++import androidx.compose.animation.core.animateFloatAsState
++import androidx.compose.animation.core.tween
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.text.TextStyle
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.TextUnit
++
++/**
++ * Renders a currency/number string that smoothly counts up or down whenever
++ * [rawValue] changes, instead of snapping instantly. Falls back to plain
++ * text immediately for non-numeric or privacy-masked strings (e.g. "••••••••")
++ * so masking/formatting behaviour is fully preserved.
++ *
++ * [formatter] receives the interpolated numeric value and must return it
++ * formatted exactly like the rest of the app (same digits, separators,
++ * currency suffix) so functionality/output never changes — only the
++ * transition between values is animated.
++ */
++@Composable
++fun AnimatedAmountText(
++    rawValue: Double,
++    displayText: String,
++    formatter: (Double) -> String,
++    color: Color,
++    fontSize: TextUnit,
++    fontWeight: FontWeight = FontWeight.Black,
++    modifier: Modifier = Modifier,
++    style: TextStyle = TextStyle.Default
++) {
++    val isMasked = displayText.contains('•')
++
++    val animatedValue by animateFloatAsState(
++        targetValue = rawValue.toFloat(),
++        animationSpec = tween(durationMillis = 500),
++        label = "animatedAmount"
++    )
++
++    val textToShow = if (isMasked) displayText else formatter(animatedValue.toDouble())
++
++    androidx.compose.material3.Text(
++        text = textToShow,
++        color = color,
++        fontSize = fontSize,
++        fontWeight = fontWeight,
++        style = style,
++        modifier = modifier
++    )
++}
+diff --git a/app/src/main/java/com/example/ui/components/AppTopBar.kt b/app/src/main/java/com/example/ui/components/AppTopBar.kt
+index 8aaae2a..d320476 100644
+--- a/app/src/main/java/com/example/ui/components/AppTopBar.kt
++++ b/app/src/main/java/com/example/ui/components/AppTopBar.kt
+@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
+ import com.example.data.model.DisplaySettings
+ import com.example.data.model.AppViewMode
+ import com.example.ui.theme.AppTheme
++import com.example.ui.theme.bounceClick
+ import com.example.utils.NumberFormatUtils
+ import com.example.utils.PersianDateUtils
+ 
+@@ -194,6 +195,7 @@ fun AppTopBar(
+                                         onClick = { showMenu = true },
+                                         modifier = Modifier
+                                             .size(32.dp)
++                                            .bounceClick()
+                                             .testTag("btn_three_dots_menu")
+                                     ) {
+                                         Icon(
+@@ -317,8 +319,18 @@ fun AppTopBar(
+                                     fontWeight = FontWeight.Bold,
+                                     color = colors.textSecondary
+                                 )
+-                                Text(
+-                                    text = formattedVal,
++                                com.example.ui.components.AnimatedAmountText(
++                                    rawValue = totalPortfolioValue,
++                                    displayText = formattedVal,
++                                    formatter = { v ->
++                                        NumberFormatUtils.formatCurrency(
++                                            v,
++                                            settings.currencyUnit,
++                                            compact = false,
++                                            usePersianDigits = settings.usePersianDigits,
++                                            privacyMode = settings.privacyMode
++                                        )
++                                    },
+                                     fontSize = if (isCompact) 18.sp else 22.sp,
+                                     fontWeight = FontWeight.Black,
+                                     color = colors.primary
+@@ -338,6 +350,7 @@ fun AppTopBar(
+                                     },
+                                     modifier = Modifier
+                                         .size(32.dp)
++                                        .bounceClick()
+                                         .testTag("btn_toggle_privacy")
+                                 ) {
+                                     Icon(
+diff --git a/app/src/main/java/com/example/ui/components/PortfolioSummaryBar.kt b/app/src/main/java/com/example/ui/components/PortfolioSummaryBar.kt
+index 94f8a73..de2a92b 100644
+--- a/app/src/main/java/com/example/ui/components/PortfolioSummaryBar.kt
++++ b/app/src/main/java/com/example/ui/components/PortfolioSummaryBar.kt
+@@ -1,6 +1,7 @@
+ package com.example.ui.components
+ 
+ import androidx.compose.animation.AnimatedVisibility
++import androidx.compose.animation.core.tween
+ import androidx.compose.animation.expandVertically
+ import androidx.compose.animation.fadeIn
+ import androidx.compose.animation.fadeOut
+@@ -28,7 +29,9 @@ import com.example.data.model.CalculatedNode
+ import com.example.data.model.CurrencyUnit
+ import com.example.data.model.DisplaySettings
+ import com.example.ui.theme.*
++import com.example.ui.theme.bounceClick
+ import com.example.utils.NumberFormatUtils
++import androidx.compose.animation.animateContentSize
+ 
+ import androidx.compose.foundation.horizontalScroll
+ import androidx.compose.foundation.rememberScrollState
+@@ -51,6 +54,7 @@ fun PortfolioSummaryBar(
+         Column(
+             modifier = Modifier
+                 .fillMaxWidth()
++                .animateContentSize(animationSpec = tween(durationMillis = 260))
+                 .padding(horizontal = if (isCompact) 10.dp else 16.dp, vertical = 6.dp),
+             verticalArrangement = Arrangement.spacedBy(8.dp)
+         ) {
+@@ -147,7 +151,7 @@ fun PortfolioSummaryBar(
+                                 // Stats Expand Toggle Button
+                                 FilledTonalIconButton(
+                                     onClick = { isExpandedStats = !isExpandedStats },
+-                                    modifier = Modifier.size(26.dp),
++                                    modifier = Modifier.size(26.dp).bounceClick(),
+                                     colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                         containerColor = Color(0x33FFFFFF),
+                                         contentColor = Color.White
+@@ -177,14 +181,24 @@ fun PortfolioSummaryBar(
+                                 color = Color.White.copy(alpha = 0.9f)
+                             )
+ 
+-                            Text(
+-                                text = NumberFormatUtils.formatCurrency(
++                            AnimatedAmountText(
++                                rawValue = rootCalculated.totalValue,
++                                displayText = NumberFormatUtils.formatCurrency(
+                                     rootCalculated.totalValue,
+                                     settings.currencyUnit,
+                                     compact = false,
+                                     usePersianDigits = settings.usePersianDigits,
+                                     privacyMode = settings.privacyMode
+                                 ),
++                                formatter = { v ->
++                                    NumberFormatUtils.formatCurrency(
++                                        v,
++                                        settings.currencyUnit,
++                                        compact = false,
++                                        usePersianDigits = settings.usePersianDigits,
++                                        privacyMode = settings.privacyMode
++                                    )
++                                },
+                                 fontSize = if (isCompact) 17.sp else 20.sp,
+                                 fontWeight = FontWeight.Black,
+                                 color = Color.White
+@@ -261,6 +275,7 @@ fun PortfolioSummaryBar(
+                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                     modifier = Modifier
+                         .weight(1f)
++                        .bounceClick()
+                         .clickable { onOpenChart() }
+                 ) {
+                     Column(
+diff --git a/app/src/main/java/com/example/ui/components/SharedViewHeader.kt b/app/src/main/java/com/example/ui/components/SharedViewHeader.kt
+index 62c9a3a..28a398c 100644
+--- a/app/src/main/java/com/example/ui/components/SharedViewHeader.kt
++++ b/app/src/main/java/com/example/ui/components/SharedViewHeader.kt
+@@ -26,6 +26,7 @@ import com.example.data.model.DisplaySettings
+ import com.example.data.model.SortConfig
+ import com.example.data.model.SortField
+ import com.example.ui.theme.AppTheme
++import com.example.ui.theme.bounceClick
+ 
+ @Composable
+ fun SharedViewHeader(
+@@ -47,8 +48,9 @@ fun SharedViewHeader(
+     val viewModes = settings.customViewOrder.ifEmpty { AppViewMode.values().toList() }
+ 
+     Surface(
+-        color = colors.surfaceVariant.copy(alpha = 0.4f),
+-        shape = RoundedCornerShape(12.dp),
++        color = colors.surfaceVariant.copy(alpha = 0.45f),
++        shape = RoundedCornerShape(16.dp),
++        border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.4f)),
+         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp)
+     ) {
+         Column(
+@@ -67,6 +69,7 @@ fun SharedViewHeader(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.spacedBy(4.dp),
+                         modifier = Modifier
++                            .bounceClick()
+                             .clickable { showChartDropdown = true }
+                             .padding(horizontal = 4.dp, vertical = 2.dp)
+                     ) {
+@@ -131,6 +134,7 @@ fun SharedViewHeader(
+                             verticalAlignment = Alignment.CenterVertically,
+                             horizontalArrangement = Arrangement.spacedBy(4.dp),
+                             modifier = Modifier
++                                .bounceClick()
+                                 .clickable { showSortMenu = true }
+                                 .padding(horizontal = 4.dp, vertical = 2.dp)
+                         ) {
+@@ -208,15 +212,15 @@ fun SharedViewHeader(
+                             }
+                         }
+                     },
+-                    shape = RoundedCornerShape(10.dp),
++                    shape = RoundedCornerShape(14.dp),
+                     colors = OutlinedTextFieldDefaults.colors(
+-                        focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+-                        unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+-                        focusedBorderColor = Color.Transparent,
++                        focusedContainerColor = colors.inputBackground,
++                        unfocusedContainerColor = colors.inputBackground,
++                        focusedBorderColor = colors.primary.copy(alpha = 0.5f),
+                         unfocusedBorderColor = Color.Transparent,
+                         cursorColor = colors.primary
+                     ),
+-                    modifier = Modifier.fillMaxWidth().height(42.dp)
++                    modifier = Modifier.fillMaxWidth().height(46.dp)
+                 )
+             }
+         }
+diff --git a/app/src/main/java/com/example/ui/dialogs/AddChildDialog.kt b/app/src/main/java/com/example/ui/dialogs/AddChildDialog.kt
+index c6cefba..cef6cff 100644
+--- a/app/src/main/java/com/example/ui/dialogs/AddChildDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/AddChildDialog.kt
+@@ -118,7 +118,7 @@ fun AddChildDialog(
+         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/dialogs/EditNodeDialog.kt b/app/src/main/java/com/example/ui/dialogs/EditNodeDialog.kt
+index e595c78..676d79d 100644
+--- a/app/src/main/java/com/example/ui/dialogs/EditNodeDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/EditNodeDialog.kt
+@@ -63,7 +63,7 @@ fun EditNodeDialog(
+         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/dialogs/ExcelImportDialog.kt b/app/src/main/java/com/example/ui/dialogs/ExcelImportDialog.kt
+index f6a00d3..1b8cffe 100644
+--- a/app/src/main/java/com/example/ui/dialogs/ExcelImportDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/ExcelImportDialog.kt
+@@ -139,7 +139,7 @@ fun ExcelImportDialog(
+         properties = DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/dialogs/MoveAndDeleteDialogs.kt b/app/src/main/java/com/example/ui/dialogs/MoveAndDeleteDialogs.kt
+index 7b6f321..dd8bacc 100644
+--- a/app/src/main/java/com/example/ui/dialogs/MoveAndDeleteDialogs.kt
++++ b/app/src/main/java/com/example/ui/dialogs/MoveAndDeleteDialogs.kt
+@@ -98,7 +98,7 @@ fun MoveNodeDialog(
+         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+@@ -295,7 +295,7 @@ fun DeleteNodeDialog(
+         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/dialogs/NodeDetailsDialog.kt b/app/src/main/java/com/example/ui/dialogs/NodeDetailsDialog.kt
+index 5fc1b48..96f2f79 100644
+--- a/app/src/main/java/com/example/ui/dialogs/NodeDetailsDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/NodeDetailsDialog.kt
+@@ -40,7 +40,7 @@ fun NodeDetailsDialog(
+         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/dialogs/SettingsDialog.kt b/app/src/main/java/com/example/ui/dialogs/SettingsDialog.kt
+index 463cadb..211b545 100644
+--- a/app/src/main/java/com/example/ui/dialogs/SettingsDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/SettingsDialog.kt
+@@ -68,7 +68,7 @@ fun SettingsDialog(
+         properties = DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f)),
+             modifier = Modifier
+@@ -142,7 +142,7 @@ fun SettingsDialog(
+                     if (selectedTabIndex == 0) {
+                     // 1. Theme & Color Palette Card (وظیفه ۴ و ۵: تجمیع حالت روز/شب با پالت و تم برنامه)
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -281,7 +281,7 @@ fun SettingsDialog(
+ 
+                     // 1.2 Chart Asset Colors Card (وظیفه ۴: تفکیک رنگ‌بندی نمودارها از پالت و تم برنامه)
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -336,7 +336,7 @@ fun SettingsDialog(
+ 
+                     // 1.5 Text & Icon Size Selector
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -375,7 +375,7 @@ fun SettingsDialog(
+                     if (selectedTabIndex == 1) {
+                     // 1.8 Customization of Chart & View Tabs Order (شخصی‌سازی ترتیب نمودارها)
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -451,7 +451,7 @@ fun SettingsDialog(
+ 
+                     // 2. Display Metrics Toggles (Percent of Total, Percent of Group, Total Value)
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -502,7 +502,7 @@ fun SettingsDialog(
+ 
+                     // 3. Currency Unit Selection
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -560,7 +560,7 @@ fun SettingsDialog(
+ 
+                     // 3. Persian Digits Toggle
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -583,7 +583,7 @@ fun SettingsDialog(
+ 
+                     // 4. Decimal Places
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -625,7 +625,7 @@ fun SettingsDialog(
+                     if (selectedTabIndex == 0 || selectedTabIndex == 1) {
+                         // Default Settings Card
+                         Card(
+-                            shape = RoundedCornerShape(20.dp),
++                            shape = RoundedCornerShape(26.dp),
+                             colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                         ) {
+@@ -667,7 +667,7 @@ fun SettingsDialog(
+                     if (selectedTabIndex == 2) {
+                     // 5. Data Backup & Restore
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant.copy(alpha = 0.5f)),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -710,7 +710,7 @@ fun SettingsDialog(
+ 
+                     // 6. Reset Database
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant),
+                         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border.copy(alpha = 0.6f))
+                     ) {
+@@ -730,7 +730,7 @@ fun SettingsDialog(
+ 
+                     // 6.5 Wipe All Financial Data (وظیفه ۶: منوی خام کردن کامل اطلاعات مالی با منوی اخطار)
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.lossContainer.copy(alpha = 0.35f)),
+                         border = androidx.compose.foundation.BorderStroke(1.2.dp, colors.loss.copy(alpha = 0.5f))
+                     ) {
+@@ -772,7 +772,7 @@ fun SettingsDialog(
+ 
+                     // 7. PDF Report Generation (گزارش‌گیری)
+                     Card(
+-                        shape = RoundedCornerShape(20.dp),
++                        shape = RoundedCornerShape(26.dp),
+                         colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant),
+                         border = androidx.compose.foundation.BorderStroke(1.2.dp, colors.primary.copy(alpha = 0.5f))
+                     ) {
+diff --git a/app/src/main/java/com/example/ui/dialogs/SymbolBookDialog.kt b/app/src/main/java/com/example/ui/dialogs/SymbolBookDialog.kt
+index 6f9a3ee..913022b 100644
+--- a/app/src/main/java/com/example/ui/dialogs/SymbolBookDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/SymbolBookDialog.kt
+@@ -84,7 +84,7 @@ fun SymbolBookDialog(
+         properties = DialogProperties(usePlatformDefaultWidth = false)
+     ) {
+         Card(
+-            shape = RoundedCornerShape(20.dp),
++            shape = RoundedCornerShape(26.dp),
+             colors = CardDefaults.cardColors(containerColor = colors.surface),
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/dialogs/UndoHistoryDialog.kt b/app/src/main/java/com/example/ui/dialogs/UndoHistoryDialog.kt
+index ef852ee..c2e3164 100644
+--- a/app/src/main/java/com/example/ui/dialogs/UndoHistoryDialog.kt
++++ b/app/src/main/java/com/example/ui/dialogs/UndoHistoryDialog.kt
+@@ -49,12 +49,13 @@ fun UndoHistoryDialog(
+ 
+     Dialog(onDismissRequest = onDismiss) {
+         Surface(
+-            shape = RoundedCornerShape(16.dp),
++            shape = RoundedCornerShape(26.dp),
+             color = colors.surface,
+             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
+             shadowElevation = 10.dp,
+             modifier = Modifier
+-                .fillMaxWidth()
++                .fillMaxWidth(0.94f)
++                .widthIn(max = 520.dp)
+                 .padding(8.dp)
+                 .testTag("undo_history_dialog")
+         ) {
+diff --git a/app/src/main/java/com/example/ui/theme/Motion.kt b/app/src/main/java/com/example/ui/theme/Motion.kt
+new file mode 100644
+index 0000000..9da175b
+--- /dev/null
++++ b/app/src/main/java/com/example/ui/theme/Motion.kt
+@@ -0,0 +1,52 @@
++package com.example.ui.theme
++
++import androidx.compose.animation.core.Spring
++import androidx.compose.animation.core.animateFloatAsState
++import androidx.compose.animation.core.spring
++import androidx.compose.animation.core.tween
++import androidx.compose.foundation.interaction.MutableInteractionSource
++import androidx.compose.foundation.interaction.collectIsPressedAsState
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.remember
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.graphicsLayer
++
++/**
++ * Centralized motion tokens so every screen animates with the same feel:
++ * quick, springy and never sluggish. Reuse these instead of ad-hoc durations.
++ */
++object Motion {
++    val Snappy = spring<Float>(
++        dampingRatio = Spring.DampingRatioMediumBouncy,
++        stiffness = Spring.StiffnessMedium
++    )
++    val Gentle = spring<Float>(
++        dampingRatio = Spring.DampingRatioLowBouncy,
++        stiffness = Spring.StiffnessLow
++    )
++    val FastTween = tween<Float>(durationMillis = 180)
++    val MediumTween = tween<Float>(durationMillis = 320)
++}
++
++/**
++ * Adds a subtle, modern "press to shrink" tactile response to any tappable
++ * surface (cards, pills, icon buttons) without altering its click behaviour.
++ * Purely visual — wrap the existing `Modifier.clickable { ... }` with this.
++ */
++@Composable
++fun Modifier.bounceClick(
++    interactionSource: MutableInteractionSource? = null,
++    scaleDown: Float = 0.94f
++): Modifier {
++    val source = interactionSource ?: remember { MutableInteractionSource() }
++    val isPressed by source.collectIsPressedAsState()
++    val scale by animateFloatAsState(
++        targetValue = if (isPressed) scaleDown else 1f,
++        animationSpec = Motion.Snappy,
++        label = "bounceClickScale"
++    )
++    return this.graphicsLayer {
++        scaleX = scale
++        scaleY = scale
++    }
++}
+diff --git a/app/src/main/java/com/example/ui/views/ClassicTreeView.kt b/app/src/main/java/com/example/ui/views/ClassicTreeView.kt
+index f0df82d..082e660 100644
+--- a/app/src/main/java/com/example/ui/views/ClassicTreeView.kt
++++ b/app/src/main/java/com/example/ui/views/ClassicTreeView.kt
+@@ -295,7 +295,7 @@ fun ClassicTreeNodeRow(
+     }
+ 
+     Surface(
+-        shape = RoundedCornerShape(6.dp),
++        shape = RoundedCornerShape(8.dp),
+         color = if (isSelected) palette.primary.copy(alpha = 0.15f) else Color.Transparent,
+         border = if (isSelected) androidx.compose.foundation.BorderStroke(1.dp, palette.primary.copy(alpha = 0.5f)) else null,
+         modifier = Modifier
+diff --git a/app/src/main/java/com/example/ui/views/ModernTreeView.kt b/app/src/main/java/com/example/ui/views/ModernTreeView.kt
+index f01e0e1..bc2c533 100644
+--- a/app/src/main/java/com/example/ui/views/ModernTreeView.kt
++++ b/app/src/main/java/com/example/ui/views/ModernTreeView.kt
+@@ -33,6 +33,7 @@ import com.example.ui.theme.*
+ import com.example.utils.AssetColorUtils
+ import com.example.utils.NumberFormatUtils
+ import com.example.ui.components.SharedViewHeader
++import com.example.ui.theme.bounceClick
+ 
+ @Composable
+ fun ModernTreeView(
+@@ -228,7 +229,7 @@ fun ModernTreeNodeRow(
+     var showMenu by remember { mutableStateOf(false) }
+ 
+     Surface(
+-        shape = RoundedCornerShape(12.dp),
++        shape = RoundedCornerShape(14.dp),
+         color = when {
+             isRoot -> colors.primaryContainer
+             isZero -> colors.background
+@@ -246,6 +247,7 @@ fun ModernTreeNodeRow(
+         modifier = Modifier
+             .fillMaxWidth()
+             .padding(start = 0.dp, end = 0.dp)
++            .bounceClick(scaleDown = 0.98f)
+             .combinedClickable(
+                 onClick = {
+                     if (node.isGroup) onToggleExpand() else onDoubleTap()

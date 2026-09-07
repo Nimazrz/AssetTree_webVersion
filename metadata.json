@@ -1,0 +1,8 @@
+{
+  "name": "Remix AssetTree",
+  "description": "سیستم جامع مدیریت سلسله‌مراتبی دارایی‌ها و سبد سرمایه‌گذاری با محاسبات پایین به بالا",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

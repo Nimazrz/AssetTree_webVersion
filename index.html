@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23005FB1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4'/><path d='M4 6v12c0 1.1.9 2 2 2h14v-4'/><path d='M18 12a2 2 0 0 0 0 4h4v-4Z'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Remix AssetTree</title>
+    <meta name="description" content="سیستم جامع مدیریت سلسلهمراتبی داراییها و سبد سرمایهگذاری با محاسبات پایین به بالا" />
+    <meta property="og:title" content="Remix AssetTree" />
+    <meta property="og:description" content="سیستم جامع مدیریت سلسلهمراتبی داراییها و سبد سرمایهگذاری با محاسبات پایین به بالا" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Vazirmatn Persian Font direct CDN fallback -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
+    <script>
+      (function() {
+        try {
+          const s = localStorage.getItem('assettree_display_settings_v1');
+          if (s) {
+            const parsed = JSON.parse(s);
+            if (parsed.themeMode === 'DARK' || (parsed.themeMode !== 'LIGHT' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              document.documentElement.classList.add('dark');
+              document.documentElement.style.colorScheme = 'dark';
+            } else {
+              document.documentElement.classList.remove('dark');
+              document.documentElement.style.colorScheme = 'light';
+            }
+            if (parsed.language === 'en') {
+              document.documentElement.lang = 'en';
+              document.documentElement.dir = 'ltr';
+            }
+          } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased font-sans select-none min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

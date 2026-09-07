@@ -1,0 +1,156 @@
+import { AppLanguage } from '../types';
+
+export const TRANSLATIONS = {
+  appTitle: {
+    fa: 'درخت دارایی‌ها (AssetTree)',
+    en: 'AssetTree Portfolio',
+  },
+  appSubtitle: {
+    fa: 'سامانه تحلیل و مدیریت سلسله‌مراتبی دارایی‌ها با فونت وزیری',
+    en: 'Hierarchical Asset & Financial Portfolio Management',
+  },
+  tabs: {
+    TREEMAP: { fa: 'نقشه دارایی', en: 'Treemap' },
+    CLASSIC_TREE: { fa: 'درخت کلاسیک', en: 'Classic Tree' },
+    TREE: { fa: 'کارت‌های مدرن', en: 'Modern Cards' },
+    CHART: { fa: 'خورشیدی', en: 'Sunburst' },
+    BAR_CHART: { fa: 'میله‌ای', en: 'Bar Chart' },
+    PIE_CHART: { fa: 'دایره‌ای', en: 'Pie & Donut' },
+    ANALYTICS: { fa: 'داشبورد سلامت', en: 'Analytics' },
+  },
+  topBar: {
+    privacyOn: { fa: 'نمایش ارقام و مبالغ', en: 'Show Financial Amounts' },
+    privacyOff: { fa: 'مخفی‌سازی مبالغ (حالت امن)', en: 'Hide Amounts (Privacy Mode)' },
+    undo: { fa: 'بازگردانی عملیات قبلی', en: 'Undo Last Action' },
+    excelImport: { fa: 'ورود اطلاعات از اکسل / کارگزاری', en: 'Import from Excel / Brokerage' },
+    symbolBook: { fa: 'کتابچه نمادها', en: 'Symbol Book' },
+    settings: { fa: 'تنظیمات برنامه', en: 'Settings' },
+    toggleTheme: { fa: 'تغییر پوسته (روز / شب)', en: 'Toggle Theme (Day / Night)' },
+    switchLanguageToEn: { fa: 'تغییر منوها به انگلیسی', en: 'Switch to English Menus' },
+    switchLanguageToFa: { fa: 'تغییر منوها به فارسی وزیری', en: 'Switch to Persian Menus' },
+    languageButtonLabel: { fa: 'EN', en: 'فارسی' },
+  },
+  summary: {
+    totalValue: { fa: 'ارزش کل سبد دارایی', en: 'Total Portfolio Value' },
+    directAssets: { fa: 'دارایی مستقیم', en: 'Direct Assets' },
+    categories: { fa: 'دسته‌بندی و گروه', en: 'Categories & Groups' },
+    totalNodes: { fa: 'کل اقلام پورتفو', en: 'Total Portfolio Nodes' },
+    maxDepth: { fa: 'عمق سلسله‌مراتب', en: 'Hierarchy Depth' },
+    auditVerified: { fa: 'تراز محاسباتی ۱۰۰٪ معتبر', en: 'Bottom-up Audit 100% Valid' },
+    auditWarning: { fa: 'انحراف محاسباتی یافت شد', en: 'Calculation Discrepancy Found' },
+    privacyMasked: { fa: 'ارقام مالی در حالت امن مخفی هستند', en: 'Financial numbers hidden in privacy mode' },
+    addAsset: { fa: 'افزودن دارایی جدید', en: 'Add New Asset' },
+    level: { fa: 'سطح', en: 'Lvl' },
+  },
+  settingsDialog: {
+    title: { fa: 'تنظیمات سامانه و پورتفو', en: 'System & Portfolio Settings' },
+    subtitle: { fa: 'پیکربندی زبان منوها، نمایش، واحد پولی و مدیریت نسخه پشتیبان', en: 'Configure menu language, display format, currency and data backups' },
+    languageSection: { fa: 'زبان منوهای برنامه (Language)', en: 'Application Menu Language' },
+    langPersian: { fa: 'فارسی (قلم زیبای وزیری)', en: 'Persian (Vazirmatn Font)' },
+    langEnglish: { fa: 'English (منوی انگلیسی)', en: 'English (English UI)' },
+    financialUnits: { fa: 'واحد پولی و نحوه نمایش اعداد', en: 'Currency & Number Formatting' },
+    defaultCurrency: { fa: 'واحد پولی پیش‌فرض:', en: 'Default Currency:' },
+    toman: { fa: 'تومان', en: 'Toman' },
+    rial: { fa: 'ریال', en: 'Rial' },
+    digitsFormat: { fa: 'قالب نمایش ارقام:', en: 'Digits Format:' },
+    persianDigits: { fa: 'فارسی (۱۲۳۴۵۶)', en: 'Persian (۱۲۳۴۵۶)' },
+    englishDigits: { fa: 'انگلیسی (123456)', en: 'English (123456)' },
+    compactCurrency: { fa: 'نمایش فشرده مبالغ (همت / م.م.ت / K, M, B, T)', en: 'Compact Currency Format (K, M, B, T)' },
+    compactCurrencyHint: { fa: 'مبالغ بزرگ را به صورت خلاصه و خوانا نمایش می‌دهد.', en: 'Renders large financial numbers with readable concise units.' },
+    appearance: { fa: 'ظاهر و پوسته برنامه', en: 'Appearance & Theme' },
+    themeMode: { fa: 'حالت رنگی:', en: 'Color Theme:' },
+    light: { fa: 'روشن', en: 'Light' },
+    dark: { fa: 'تاریک', en: 'Dark' },
+    system: { fa: 'سیستم', en: 'System' },
+    fontNotice: { fa: 'فونت فارسی وزیری (Vazirmatn) به صورت پیش‌فرض فعال است.', en: 'Modern sans-serif typography with Persian Vazirmatn font support.' },
+    dataManagement: { fa: 'پشتیبان‌گیری و مدیریت داده‌ها', en: 'Backup & Data Management' },
+    exportJson: { fa: 'دانلود نسخه پشتیبان (JSON)', en: 'Export Backup (JSON)' },
+    importJson: { fa: 'بازیابی از فایل پشتیبان', en: 'Import from JSON File' },
+    resetSample: { fa: 'بازنشانی به داده‌های نمونه پورتفو', en: 'Reset to Sample Portfolio' },
+    wipeAll: { fa: 'پاکسازی کامل پورتفو (شروع از صفر)', en: 'Wipe All Assets (Start Blank)' },
+    resetConfirm: { fa: 'آیا از بازنشانی به داده‌های پیش‌فرض مطمئن هستید؟ تمام تغییرات فعلی جایگزین خواهند شد.', en: 'Are you sure you want to reset to default sample data? All current changes will be overwritten.' },
+    wipeConfirm: { fa: 'آیا از پاکسازی تمام دارایی‌ها اطمینان دارید؟ این عملیات تمام گره‌ها را حذف می‌کند.', en: 'Are you sure you want to wipe all assets? This will remove all items from the portfolio.' },
+    backupImportSuccess: { fa: 'داده‌های پشتیبان با موفقیت بازیابی شد.', en: 'Backup data imported successfully.' },
+    backupImportError: { fa: 'خطا در بارگذاری فایل پشتیبان. فرمت فایل نامعتبر است.', en: 'Failed to import backup file. Invalid file format.' },
+  },
+  common: {
+    edit: { fa: 'ویرایش', en: 'Edit' },
+    delete: { fa: 'حذف', en: 'Delete' },
+    move: { fa: 'انتقال', en: 'Move' },
+    addChild: { fa: 'افزودن زیرمجموعه', en: 'Add Sub-Node' },
+    details: { fa: 'جزئیات', en: 'Details' },
+    cancel: { fa: 'انصراف', en: 'Cancel' },
+    save: { fa: 'ذخیره تغییرات', en: 'Save Changes' },
+    close: { fa: 'بستن', en: 'Close' },
+    confirm: { fa: 'تأیید', en: 'Confirm' },
+    search: { fa: 'جستجو در دارایی‌ها و دسته‌ها...', en: 'Search assets and categories...' },
+    expandAll: { fa: 'گسترش همه', en: 'Expand All' },
+    collapseAll: { fa: 'جمع‌کردن همه', en: 'Collapse All' },
+    sort: { fa: 'مرتب‌سازی', en: 'Sort' },
+    totalValue: { fa: 'ارزش کل', en: 'Total Value' },
+    shareOfTotal: { fa: 'سهم از کل پورتفو', en: 'Share of Total' },
+    shareOfParent: { fa: 'سهم از گروه والد', en: 'Share of Parent Group' },
+    quantity: { fa: 'تعداد سهم / واحد', en: 'Quantity / Units' },
+    unitPrice: { fa: 'قیمت هر واحد', en: 'Unit Price' },
+    category: { fa: 'دسته‌بندی (گروه)', en: 'Category (Group)' },
+    asset: { fa: 'دارایی مستقیم', en: 'Direct Asset' },
+    rootPortfolio: { fa: 'سبد کل دارایی‌ها', en: 'Total Portfolio' },
+    noChildren: { fa: 'این گروه هنوز هیچ زیرمجموعه‌ای ندارد.', en: 'This group has no sub-items yet.' },
+    emptyStateTitle: { fa: 'هیچ دارایی یافت نشد', en: 'No assets found' },
+    emptyStateDesc: { fa: 'می‌توانید با استفاده از دکمه «افزودن دارایی» یا «ورود از اکسل» اقلام جدید ثبت نمایید.', en: 'You can register new items using the "Add Asset" or "Import from Excel" buttons.' },
+    share: { fa: 'سهم', en: 'Share' },
+    subItemsCount: { fa: 'زیرمجموعه', en: 'Sub-items' },
+    currencyToman: { fa: 'تومان', en: 'Toman' },
+    currencyRial: { fa: 'ریال', en: 'Rial' },
+  },
+  dialogs: {
+    addChildTitle: { fa: 'افزودن دارایی یا گروه جدید', en: 'Add New Asset or Group' },
+    editTitle: { fa: 'ویرایش مشخصات دارایی', en: 'Edit Asset Details' },
+    moveTitle: { fa: 'انتقال به دسته‌بندی دیگر', en: 'Move to Another Category' },
+    deleteTitle: { fa: 'تأیید حذف دارایی', en: 'Confirm Asset Deletion' },
+    deleteWarning: { fa: 'آیا از حذف این دارایی و کلیه زیرمجموعه‌های آن اطمینان دارید؟', en: 'Are you sure you want to delete this asset and all its sub-items?' },
+    nameLabel: { fa: 'نام دارایی یا دسته:', en: 'Asset or Category Name:' },
+    parentLabel: { fa: 'دسته والد:', en: 'Parent Category:' },
+    typeLabel: { fa: 'نوع گره:', en: 'Node Type:' },
+    typeGroup: { fa: 'گروه / دسته‌بندی (ارزش خودکار از زیرمجموعه‌ها)', en: 'Category / Group (Value derived from children)' },
+    typeDirect: { fa: 'دارایی مستقیم (دارای تعداد و قیمت واحد)', en: 'Direct Asset (Has quantity and unit price)' },
+    targetParent: { fa: 'انتخاب دسته مقصد:', en: 'Select Destination Category:' },
+    symbolBookTitle: { fa: 'کتابچه و دانشنامه نمادهای بورس', en: 'Stock Market Symbol Book' },
+    excelImportTitle: { fa: 'دستیار ورود داده از اکسل / کارگزاری', en: 'Brokerage & Excel Import Assistant' },
+    undoHistoryTitle: { fa: 'تاریخچه تغییرات و بازگردانی (Undo / Redo)', en: 'Audit History & Undo / Redo' },
+  },
+  classicTable: {
+    colName: { fa: 'نام دارایی / دسته', en: 'Asset / Category Name' },
+    colType: { fa: 'نوع', en: 'Type' },
+    colQuantity: { fa: 'تعداد / حجم', en: 'Quantity' },
+    colPrice: { fa: 'قیمت واحد', en: 'Unit Price' },
+    colTotalValue: { fa: 'ارزش کل', en: 'Total Value' },
+    colPercentTotal: { fa: 'درصد از کل', en: '% of Total' },
+    colPercentGroup: { fa: 'درصد از والد', en: '% of Parent' },
+    colActions: { fa: 'عملیات', en: 'Actions' },
+  },
+  analytics: {
+    title: { fa: 'داشبورد سلامت و تحلیل پورتفو', en: 'Portfolio Health & Analytics Dashboard' },
+    subtitle: { fa: 'پایش تراز ریاضی، تحلیل تمرکز ریسک و توزیع سطوح دارایی', en: 'Bottom-up mathematical audit, risk concentration and depth distribution' },
+    top5Assets: { fa: '۵ دارایی با بیشترین ارزش مالی', en: 'Top 5 Highest Value Assets' },
+    depthDistribution: { fa: 'توزیع دارایی‌ها در سطوح مختلف درخت', en: 'Asset Distribution Across Tree Depth Levels' },
+    statusHealthy: { fa: 'پورتفوی مالی در تراز کامل قرار دارد', en: 'Portfolio is in Perfect Bottom-Up Balance' },
+    statusHealthyDesc: { fa: 'حاصل‌جمع کلیه دارایی‌های پایین‌به‌بالا دقیقاً با ارزش سرشاخه برابر است.', en: 'The sum of all leaf and branch assets matches the root portfolio total with zero variance.' },
+  },
+};
+
+export function t(path: string, lang: AppLanguage = 'fa'): string {
+  const parts = path.split('.');
+  let current: any = TRANSLATIONS;
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      return path;
+    }
+  }
+  if (current && typeof current === 'object') {
+    return current[lang] || current['fa'] || path;
+  }
+  return typeof current === 'string' ? current : path;
+}
