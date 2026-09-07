@@ -1,3 +1,8 @@
+/**
+ * Core Type Definitions & Interfaces for AssetTree
+ * Defines stored nodes, calculated hierarchy metrics, settings, symbols, and undo snapshots.
+ */
+
 export const ROOT_NODE_ID = "root";
 export const ROOT_NODE_NAME = "پرتفوی جامع دارایی‌ها";
 

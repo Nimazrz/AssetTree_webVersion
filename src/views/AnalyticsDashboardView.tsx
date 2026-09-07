@@ -14,6 +14,7 @@ import {
   PieChart,
   Download,
   ShieldCheck,
+  Printer,
 } from 'lucide-react';
 
 interface AnalyticsProps {
@@ -97,14 +98,28 @@ export const AnalyticsDashboardView: React.FC<AnalyticsProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onExportBackup}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm font-semibold shadow-xs shrink-0 cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span>{isEn ? 'Export Portfolio Report (JSON)' : 'دریافت خروجی گزارش (JSON)'}</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              id="btn-print-portfolio-report"
+              onClick={() => window.print()}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 transition-colors text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
+              title={isEn ? 'Print or Save Report as PDF' : 'چاپ یا ذخیره گزارش به‌صورت PDF'}
+            >
+              <Printer className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{isEn ? 'Print / PDF' : 'چاپ / گزارش PDF'}</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-export-backup-json"
+              onClick={onExportBackup}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm font-semibold shadow-xs cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>{isEn ? 'Export (JSON)' : 'خروجی (JSON)'}</span>
+            </button>
+          </div>
         </div>
       </div>
 

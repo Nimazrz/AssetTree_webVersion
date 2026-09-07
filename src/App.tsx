@@ -1,3 +1,9 @@
+/**
+ * AssetTree Web Application Entry Point
+ * Orchestrates portfolio state, dynamic views, interactive modal dialogs,
+ * theme management, and localized backup operations.
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   StoredNodeEntity,
@@ -10,8 +16,10 @@ import {
 } from './types';
 import { assetStorage } from './data/storage';
 import { TreeEngine } from './core/TreeEngine';
+import { getPersianBackupFileName } from './utils/persianDate';
 import { AppTopBar } from './components/AppTopBar';
 import { PortfolioSummaryBar } from './components/PortfolioSummaryBar';
+import { SearchAndChartTabsBar } from './components/SearchAndChartTabsBar';
 
 // Views
 import { ModernTreeView } from './views/ModernTreeView';
@@ -40,6 +48,7 @@ export const App: React.FC = () => {
   const [settings, setSettings] = useState<DisplaySettings>(() => assetStorage.getSettings());
   const [sortConfig, setSortConfig] = useState<SortConfig>(() => assetStorage.getSortConfig());
   const [activeView, setActiveView] = useState<AppViewMode>('TREE');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [undoCount, setUndoCount] = useState<number>(() => assetStorage.getUndoCount());
 
   // Dark Theme detection and sync
@@ -270,10 +279,12 @@ export const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `assettree-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = settings.language === 'en'
+      ? `AssetTree_Backup_${new Date().toISOString().slice(0, 10)}.json`
+      : getPersianBackupFileName();
     a.click();
     URL.revokeObjectURL(url);
-    showToast('فایل پشتیبان با موفقیت دانلود شد.');
+    showToast(settings.language === 'en' ? 'Backup file downloaded successfully.' : 'فایل پشتیبان با موفقیت دانلود شد.');
   };
 
   const handleImportBackup = (jsonString: string) => {
@@ -303,17 +314,10 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Navigation Bar */}
       <AppTopBar
-        activeView={activeView}
         settings={settings}
         undoCount={undoCount}
-        isDark={isDark}
-        onSelectView={setActiveView}
-        onToggleTheme={toggleTheme}
         onTogglePrivacy={togglePrivacy}
-        onToggleLanguage={toggleLanguage}
         onUndo={() => setIsUndoHistoryOpen(true)}
-        onOpenExcelImport={() => setIsExcelImportOpen(true)}
-        onOpenSymbolBook={() => setIsSymbolBookOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
@@ -325,6 +329,17 @@ export const App: React.FC = () => {
           settings={settings}
           onOpenAddRootAsset={() => setSelectedAddChildParent(sortedRoot)}
           onOpenChart={() => setActiveView('CHART')}
+        />
+
+        {/* Search Box and Chart Type Selection Menu (منوی انتخاب نوع نمودار در زیر باکس جستجو) */}
+        <SearchAndChartTabsBar
+          activeView={activeView}
+          onSelectView={setActiveView}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          settings={settings}
+          sortConfig={sortConfig}
+          onUpdateSort={handleUpdateSortConfig}
         />
 
         {/* View Switcher Container */}
@@ -339,6 +354,8 @@ export const App: React.FC = () => {
             onEditNode={setSelectedEditNode}
             onMoveNode={setSelectedMoveNode}
             onDeleteNode={setSelectedDeleteNode}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
         )}
 
@@ -351,6 +368,7 @@ export const App: React.FC = () => {
             onEditNode={setSelectedEditNode}
             onMoveNode={setSelectedMoveNode}
             onDeleteNode={setSelectedDeleteNode}
+            searchQuery={searchQuery}
           />
         )}
 
@@ -498,6 +516,14 @@ export const App: React.FC = () => {
           onImportBackup={handleImportBackup}
           onResetToDefaults={handleResetToDefaults}
           onWipeToZero={handleWipeToZero}
+          onOpenExcelImport={() => {
+            setIsSettingsOpen(false);
+            setIsExcelImportOpen(true);
+          }}
+          onOpenSymbolBook={() => {
+            setIsSettingsOpen(false);
+            setIsSymbolBookOpen(true);
+          }}
         />
       )}
 

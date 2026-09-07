@@ -1,3 +1,9 @@
+/**
+ * TreeEngine: Bottom-Up Financial Calculation & Integrity Engine
+ * Recursively computes asset values, hierarchy percentages, cycle prevention,
+ * brokerage Excel parsing, and anomaly detection.
+ */
+
 import {
   StoredNodeEntity,
   CalculatedNode,

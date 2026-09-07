@@ -29,6 +29,7 @@ interface ClassicTreeViewProps {
   onEditNode: (node: CalculatedNode) => void;
   onMoveNode: (node: CalculatedNode) => void;
   onDeleteNode: (node: CalculatedNode) => void;
+  searchQuery?: string;
 }
 
 export const ClassicTreeView: React.FC<ClassicTreeViewProps> = ({
@@ -39,6 +40,7 @@ export const ClassicTreeView: React.FC<ClassicTreeViewProps> = ({
   onEditNode,
   onMoveNode,
   onDeleteNode,
+  searchQuery,
 }) => {
   const [collapsedMap, setCollapsedMap] = useState<Record<string, boolean>>({});
   const lang: AppLanguage = settings.language || 'fa';
@@ -56,6 +58,21 @@ export const ClassicTreeView: React.FC<ClassicTreeViewProps> = ({
     const isRoot = node.id === rootCalculated.id;
     const isCollapsed = collapsedMap[node.id];
     const palette = getPaletteForNode(node.name, node.categoryTag, settings.customAssetColors);
+
+    // Search filter for classic tree rows
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const nodeMatches =
+        node.name.toLowerCase().includes(q) ||
+        (node.categoryTag && node.categoryTag.toLowerCase().includes(q));
+      const hasMatchingChild = (n: CalculatedNode): boolean => {
+        if (n.name.toLowerCase().includes(q) || (n.categoryTag && n.categoryTag.toLowerCase().includes(q))) return true;
+        return n.children.some(hasMatchingChild);
+      };
+      if (!nodeMatches && !node.children.some(hasMatchingChild)) {
+        return null;
+      }
+    }
 
     return (
       <React.Fragment key={node.id}>

@@ -1,3 +1,9 @@
+/**
+ * Local Storage Persistence & State Manager
+ * Provides reliable offline storage, undo/redo history tracking, backup export/import,
+ * and display configuration persistence.
+ */
+
 import {
   StoredNodeEntity,
   SymbolEntryEntity,

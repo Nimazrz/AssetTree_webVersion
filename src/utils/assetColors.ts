@@ -1,3 +1,8 @@
+/**
+ * Asset Category Color Palettes & Keyword Matching
+ * Maps asset titles (gold, real estate, crypto, stocks, etc.) to accessible, high-contrast color palettes.
+ */
+
 export interface AssetColorTheme {
   primary: string;
   lightTint: string;

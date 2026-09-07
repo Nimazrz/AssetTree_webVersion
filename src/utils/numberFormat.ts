@@ -1,3 +1,9 @@
+/**
+ * Number & Currency Formatting Utilities
+ * Handles Persian/English numerals, compact financial notations (Hemmat, Billion, Million),
+ * decimal precision, and privacy masking.
+ */
+
 import { CurrencyUnit, DisplaySettings, AppLanguage } from '../types';
 
 const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];

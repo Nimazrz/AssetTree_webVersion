@@ -2,11 +2,11 @@ import { AppLanguage } from '../types';
 
 export const TRANSLATIONS = {
   appTitle: {
-    fa: 'درخت دارایی‌ها (AssetTree)',
-    en: 'AssetTree Portfolio',
+    fa: 'درخت دارایی‌ها',
+    en: 'Asset Tree',
   },
   appSubtitle: {
-    fa: 'سامانه تحلیل و مدیریت سلسله‌مراتبی دارایی‌ها با فونت وزیری',
+    fa: 'سامانه تحلیل و مدیریت سلسله‌مراتبی دارایی‌ها',
     en: 'Hierarchical Asset & Financial Portfolio Management',
   },
   tabs: {
@@ -44,7 +44,18 @@ export const TRANSLATIONS = {
   },
   settingsDialog: {
     title: { fa: 'تنظیمات سامانه و پورتفو', en: 'System & Portfolio Settings' },
-    subtitle: { fa: 'پیکربندی زبان منوها، نمایش، واحد پولی و مدیریت نسخه پشتیبان', en: 'Configure menu language, display format, currency and data backups' },
+    subtitle: { fa: 'پیکربندی منوها، ابزارهای اکسل، قالب نمایش و مدیریت پایگاه داده', en: 'Configure menu language, display format, Excel tools and database backups' },
+    tabAppearance: { fa: 'ظاهر و نمایش', en: 'Appearance' },
+    tabDataTools: { fa: 'داده‌ها و اکسل', en: 'Data & Excel' },
+    tabBackupStorage: { fa: 'پشتیبان و داده‌ها', en: 'Backup & Storage' },
+    excelImportTitle: { fa: 'ورود اطلاعات از فایل اکسل پورتفو', en: 'Portfolio Excel Import' },
+    excelImportDesc: { fa: 'بارگذاری آنلاین دارایی‌ها از فایل اکسل کارگزاری‌های بورس (مفید، آگاه، فارابیکسو و استانداردهای سازمان بورس) با شناسایی خودکار ستون‌ها و تطبیق هوشمند نمادها.', en: 'Import assets from brokerage Excel spreadsheets with automatic column recognition and symbol mapping.' },
+    openExcelImportBtn: { fa: 'بارگذاری فایل اکسل', en: 'Open Excel Importer' },
+    symbolBookTitle: { fa: 'کتابچه نمادها و ضرایب', en: 'Symbol Book & Multipliers' },
+    symbolBookDesc: { fa: 'مدیریت بانک اطلاعات نمادهای بورسی، طلا، صندوق‌ها، ضرایب ارزش اسمی، دسته‌بندی پیش‌فرض و میان‌برهای ثبت سریع.', en: 'Manage stock symbols, gold, funds, nominal face value multipliers, and default category rules.' },
+    openSymbolBookBtn: { fa: 'مدیریت کتابچه نمادها', en: 'Open Symbol Book' },
+    privacyOption: { fa: 'حالت حریم خصوصی (مخفی‌سازی ارقام مالی)', en: 'Privacy Mode (Mask Financial Amounts)' },
+    privacyOptionDesc: { fa: 'در اماکن عمومی یا ارائه‌ها، مبالغ ریالی و تومانی را با کاراکترهای امن (***) جایگزین می‌کند.', en: 'Masks financial numbers with asterisks for presentations or public display.' },
     languageSection: { fa: 'زبان منوهای برنامه (Language)', en: 'Application Menu Language' },
     langPersian: { fa: 'فارسی (قلم زیبای وزیری)', en: 'Persian (Vazirmatn Font)' },
     langEnglish: { fa: 'English (منوی انگلیسی)', en: 'English (English UI)' },

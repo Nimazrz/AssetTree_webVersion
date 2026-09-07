@@ -37,6 +37,8 @@ interface ModernTreeViewProps {
   onEditNode: (node: CalculatedNode) => void;
   onMoveNode: (node: CalculatedNode) => void;
   onDeleteNode: (node: CalculatedNode) => void;
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
 }
 
 export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
@@ -49,8 +51,14 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
   onEditNode,
   onMoveNode,
   onDeleteNode,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
+  const hasExternalSearch = externalSearchQuery !== undefined;
+
   const [collapsedMap, setCollapsedMap] = useState<Record<string, boolean>>({});
   const lang: AppLanguage = settings.language || 'fa';
   const isEn = lang === 'en';
@@ -317,26 +325,45 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
 
   return (
     <div className="w-full pb-16">
-      {/* Control Bar: Search, Expand/Collapse, Sorting */}
+      {/* Control Bar: Search (if no external search), Expand/Collapse, Sorting */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-        {/* Search Input */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search
-            className={`w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 ${
-              isRtl ? 'right-3' : 'left-3'
-            }`}
-          />
-          <input
-            type="text"
-            id="input-search-tree"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={isEn ? 'Quick search assets, symbols or categories...' : 'جستجوی سریع دارایی، نماد یا گروه...'}
-            className={`w-full py-1.5 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 ${
-              isRtl ? 'pr-9 pl-3' : 'pl-9 pr-3'
-            }`}
-          />
-        </div>
+        {/* Search Input or Filter Status */}
+        {!hasExternalSearch ? (
+          <div className="relative flex-1 min-w-[200px]">
+            <Search
+              className={`w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 ${
+                isRtl ? 'right-3' : 'left-3'
+              }`}
+            />
+            <input
+              type="text"
+              id="input-search-tree"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={isEn ? 'Quick search assets, symbols or categories...' : 'جستجوی سریع دارایی، نماد یا گروه...'}
+              className={`w-full py-1.5 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 ${
+                isRtl ? 'pr-9 pl-3' : 'pl-9 pr-3'
+              }`}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs">
+            {searchQuery.trim() ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium">
+                <Search className="w-3.5 h-3.5" />
+                <span>
+                  {isEn
+                    ? `Active filter: "${searchQuery}"`
+                    : `فیلتر فعال درخت: «${searchQuery}»`}
+                </span>
+              </span>
+            ) : (
+              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                {isEn ? 'Modern Tree Hierarchy' : 'ساختار درختی و سلسله‌مراتبی'}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Expand / Collapse buttons & Sort */}
         <div className="flex items-center gap-2">
