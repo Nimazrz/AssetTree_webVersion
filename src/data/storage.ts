@@ -16,6 +16,7 @@ import {
 } from '../types';
 import { getInitialNodes, getDefaultSymbolBook } from './seedData';
 import { TreeEngine } from '../core/TreeEngine';
+import { saveUserPortfolioToFirestore, UserPortfolioCloudData } from '../lib/firebase';
 
 const STORAGE_KEY_NODES = 'asset_tree_nodes';
 const STORAGE_KEY_SYMBOLS = 'asset_tree_symbols';
@@ -54,19 +55,75 @@ export const DEFAULT_SORT_CONFIG: SortConfig = {
 
 export class AssetStorage {
   private undoStack: UndoSnapshot[] = [];
+  private activeUserId: string | null = null;
+  private syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.initIfEmpty();
   }
 
+  private getNodeKey(): string {
+    return this.activeUserId ? `${STORAGE_KEY_NODES}_${this.activeUserId}` : STORAGE_KEY_NODES;
+  }
+
+  private getSymbolsKey(): string {
+    return this.activeUserId ? `${STORAGE_KEY_SYMBOLS}_${this.activeUserId}` : STORAGE_KEY_SYMBOLS;
+  }
+
+  private getSettingsKey(): string {
+    return this.activeUserId ? `${STORAGE_KEY_SETTINGS}_${this.activeUserId}` : STORAGE_KEY_SETTINGS;
+  }
+
+  setActiveUser(userId: string | null) {
+    this.activeUserId = userId;
+    this.undoStack = [];
+    this.initIfEmpty();
+  }
+
+  getActiveUserId(): string | null {
+    return this.activeUserId;
+  }
+
+  triggerCloudSync() {
+    if (!this.activeUserId) return;
+    if (this.syncTimeout) {
+      clearTimeout(this.syncTimeout);
+    }
+    this.syncTimeout = setTimeout(() => {
+      if (!this.activeUserId) return;
+      saveUserPortfolioToFirestore(this.activeUserId, {
+        nodes: this.getNodes(),
+        symbols: this.getSymbols(),
+        settings: this.getSettings(),
+      }).catch((e) => console.warn('Cloud sync error:', e));
+    }, 600);
+  }
+
+  applyCloudData(cloudData: UserPortfolioCloudData) {
+    if (Array.isArray(cloudData.nodes) && cloudData.nodes.length > 0) {
+      localStorage.setItem(this.getNodeKey(), JSON.stringify(cloudData.nodes));
+    }
+    if (Array.isArray(cloudData.symbols) && cloudData.symbols.length > 0) {
+      localStorage.setItem(this.getSymbolsKey(), JSON.stringify(cloudData.symbols));
+    }
+    if (cloudData.settings && typeof cloudData.settings === 'object') {
+      const merged = { ...DEFAULT_DISPLAY_SETTINGS, ...cloudData.settings };
+      localStorage.setItem(this.getSettingsKey(), JSON.stringify(merged));
+    }
+  }
+
   private initIfEmpty() {
-    if (!localStorage.getItem(STORAGE_KEY_NODES)) {
+    const nodeKey = this.getNodeKey();
+    const symKey = this.getSymbolsKey();
+    const setKey = this.getSettingsKey();
+
+    if (!localStorage.getItem(nodeKey)) {
       this.saveNodes(getInitialNodes());
     }
-    if (!localStorage.getItem(STORAGE_KEY_SYMBOLS)) {
+    if (!localStorage.getItem(symKey)) {
       this.saveSymbols(getDefaultSymbolBook());
     }
-    if (!localStorage.getItem(STORAGE_KEY_SETTINGS)) {
+    if (!localStorage.getItem(setKey)) {
       this.saveSettings(DEFAULT_DISPLAY_SETTINGS);
     }
     if (!localStorage.getItem(STORAGE_KEY_SORT)) {
@@ -76,7 +133,7 @@ export class AssetStorage {
 
   getNodes(): StoredNodeEntity[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEY_NODES);
+      const data = localStorage.getItem(this.getNodeKey());
       if (!data) return getInitialNodes();
       const parsed = JSON.parse(data);
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : getInitialNodes();
@@ -86,12 +143,13 @@ export class AssetStorage {
   }
 
   saveNodes(nodes: StoredNodeEntity[]) {
-    localStorage.setItem(STORAGE_KEY_NODES, JSON.stringify(nodes));
+    localStorage.setItem(this.getNodeKey(), JSON.stringify(nodes));
+    this.triggerCloudSync();
   }
 
   getSymbols(): SymbolEntryEntity[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEY_SYMBOLS);
+      const data = localStorage.getItem(this.getSymbolsKey());
       if (!data) return getDefaultSymbolBook();
       const parsed = JSON.parse(data);
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : getDefaultSymbolBook();
@@ -101,12 +159,13 @@ export class AssetStorage {
   }
 
   saveSymbols(symbols: SymbolEntryEntity[]) {
-    localStorage.setItem(STORAGE_KEY_SYMBOLS, JSON.stringify(symbols));
+    localStorage.setItem(this.getSymbolsKey(), JSON.stringify(symbols));
+    this.triggerCloudSync();
   }
 
   getSettings(): DisplaySettings {
     try {
-      const data = localStorage.getItem(STORAGE_KEY_SETTINGS);
+      const data = localStorage.getItem(this.getSettingsKey());
       if (!data) return DEFAULT_DISPLAY_SETTINGS;
       const parsed = JSON.parse(data);
       return { ...DEFAULT_DISPLAY_SETTINGS, ...parsed };
@@ -116,7 +175,8 @@ export class AssetStorage {
   }
 
   saveSettings(settings: DisplaySettings) {
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    localStorage.setItem(this.getSettingsKey(), JSON.stringify(settings));
+    this.triggerCloudSync();
   }
 
   getSortConfig(): SortConfig {

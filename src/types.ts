@@ -171,3 +171,12 @@ export interface AssetTemplateItem {
   unit: string;
   isCustom?: boolean;
 }
+
+export interface UserProfile {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL?: string | null;
+  createdAt?: number | string | null;
+  lastLoginAt?: number | string | null;
+}

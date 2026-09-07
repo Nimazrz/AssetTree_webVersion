@@ -13,6 +13,7 @@ import {
   SortConfig,
   AppViewMode,
   ImportPlan,
+  UserProfile,
 } from './types';
 import { assetStorage } from './data/storage';
 import { TreeEngine } from './core/TreeEngine';
@@ -20,6 +21,12 @@ import { getPersianBackupFileName } from './utils/persianDate';
 import { AppTopBar } from './components/AppTopBar';
 import { PortfolioSummaryBar } from './components/PortfolioSummaryBar';
 import { SearchAndChartTabsBar } from './components/SearchAndChartTabsBar';
+import {
+  auth,
+  onAuthStateChanged,
+  loadUserPortfolioFromFirestore,
+  saveUserPortfolioToFirestore,
+} from './lib/firebase';
 
 // Views
 import { ModernTreeView } from './views/ModernTreeView';
@@ -40,6 +47,8 @@ import { ExcelImportDialog } from './dialogs/ExcelImportDialog';
 import { SymbolBookDialog } from './dialogs/SymbolBookDialog';
 import { SettingsDialog } from './dialogs/SettingsDialog';
 import { UndoHistoryDialog } from './dialogs/UndoHistoryDialog';
+import { AuthDialog, AuthMode } from './dialogs/AuthDialog';
+import { UserProfileDialog } from './dialogs/UserProfileDialog';
 
 export const App: React.FC = () => {
   // Primary State
@@ -50,6 +59,71 @@ export const App: React.FC = () => {
   const [activeView, setActiveView] = useState<AppViewMode>('TREE');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [undoCount, setUndoCount] = useState<number>(() => assetStorage.getUndoCount());
+
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [authDialogMode, setAuthDialogMode] = useState<AuthMode>('LOGIN');
+  const [resetOobCode, setResetOobCode] = useState<string | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+
+  // Listen to Firebase Auth state changes & sync user's personal portfolio
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const profile: UserProfile = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'کاربر',
+          photoURL: firebaseUser.photoURL,
+          createdAt: firebaseUser.metadata.creationTime,
+          lastLoginAt: firebaseUser.metadata.lastSignInTime,
+        };
+        setCurrentUser(profile);
+        assetStorage.setActiveUser(firebaseUser.uid);
+
+        // Fetch user's personal portfolio from Firestore
+        try {
+          const cloudData = await loadUserPortfolioFromFirestore(firebaseUser.uid);
+          if (cloudData && Array.isArray(cloudData.nodes) && cloudData.nodes.length > 0) {
+            assetStorage.applyCloudData(cloudData);
+          } else {
+            // First time registration: persist current initial nodes under this user account
+            await saveUserPortfolioToFirestore(firebaseUser.uid, {
+              nodes: assetStorage.getNodes(),
+              symbols: assetStorage.getSymbols(),
+              settings: assetStorage.getSettings(),
+            });
+          }
+        } catch (err) {
+          console.warn('Error syncing cloud portfolio data:', err);
+        }
+        reloadFromStorage();
+      } else {
+        setCurrentUser(null);
+        assetStorage.setActiveUser(null);
+        reloadFromStorage();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Check URL query parameters for password reset email action links
+  useEffect(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const modeParam = searchParams.get('mode');
+      const oobCodeParam = searchParams.get('oobCode');
+      if (modeParam === 'resetPassword' && oobCodeParam) {
+        setResetOobCode(oobCodeParam);
+        setAuthDialogMode('RESET_CONFIRM');
+        setIsAuthOpen(true);
+      }
+    } catch (e) {
+      console.warn('Could not check reset password params:', e);
+    }
+  }, []);
 
   // Dark Theme detection and sync
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -316,9 +390,15 @@ export const App: React.FC = () => {
       <AppTopBar
         settings={settings}
         undoCount={undoCount}
+        currentUser={currentUser}
         onTogglePrivacy={togglePrivacy}
         onUndo={() => setIsUndoHistoryOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenAuth={() => {
+          setAuthDialogMode('LOGIN');
+          setIsAuthOpen(true);
+        }}
+        onOpenProfile={() => setIsProfileOpen(true)}
       />
 
       {/* Main Container */}
@@ -535,6 +615,48 @@ export const App: React.FC = () => {
           onRollbackSteps={handleRollbackMultiple}
         />
       )}
+
+      {/* Authentication Dialog (Login, Register, Forgot Password, Reset Password) */}
+      <AuthDialog
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        language={settings.language || 'fa'}
+        initialMode={authDialogMode}
+        initialOobCode={resetOobCode}
+        onSuccess={(email) => {
+          showToast(
+            (settings.language || 'fa') === 'en'
+              ? `Welcome, ${email}!`
+              : `خوش آمدید! ورود با موفقیت انجام شد.`
+          );
+        }}
+      />
+
+      {/* User Personal Profile Dialog */}
+      <UserProfileDialog
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        currentUser={currentUser}
+        language={settings.language || 'fa'}
+        settings={settings}
+        totalPortfolioValue={sortedRoot.totalValue}
+        totalNodeCount={storedNodes.length}
+        onLoggedOut={() => {
+          showToast(
+            (settings.language || 'fa') === 'en'
+              ? 'Signed out successfully.'
+              : 'با موفقیت از حساب کاربری خارج شدید.'
+          );
+        }}
+        onProfileUpdated={(newName) => {
+          setCurrentUser((prev) => (prev ? { ...prev, displayName: newName } : null));
+          showToast(
+            (settings.language || 'fa') === 'en'
+              ? 'Profile updated.'
+              : 'نام حساب با موفقیت به‌روزرسانی شد.'
+          );
+        }}
+      />
     </div>
   );
 };

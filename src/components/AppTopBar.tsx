@@ -2,6 +2,7 @@ import React from 'react';
 import {
   DisplaySettings,
   AppLanguage,
+  UserProfile,
 } from '../types';
 import {
   FolderTree,
@@ -9,6 +10,8 @@ import {
   EyeOff,
   RotateCcw,
   Settings,
+  User as UserIcon,
+  LogIn,
 } from 'lucide-react';
 import { TRANSLATIONS } from '../i18n/translations';
 import { LiveDateTime } from './LiveDateTime';
@@ -16,9 +19,12 @@ import { LiveDateTime } from './LiveDateTime';
 interface AppTopBarProps {
   settings: DisplaySettings;
   undoCount: number;
+  currentUser: UserProfile | null;
   onTogglePrivacy: () => void;
   onUndo: () => void;
   onOpenSettings: () => void;
+  onOpenAuth: () => void;
+  onOpenProfile: () => void;
   // Kept optional for backward compatibility
   activeView?: string;
   onSelectView?: (view: any) => void;
@@ -32,12 +38,20 @@ interface AppTopBarProps {
 export const AppTopBar: React.FC<AppTopBarProps> = ({
   settings,
   undoCount,
+  currentUser,
   onTogglePrivacy,
   onUndo,
   onOpenSettings,
+  onOpenAuth,
+  onOpenProfile,
 }) => {
   const lang: AppLanguage = settings.language || 'fa';
   const tTop = TRANSLATIONS.topBar;
+  const isEn = lang === 'en';
+
+  const userInitial = currentUser
+    ? (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()
+    : 'U';
 
   return (
     <header className="sticky top-0 z-30 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
@@ -61,6 +75,34 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
 
           {/* Quick Action Toolbar */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Account Profile / Sign In button */}
+            {currentUser ? (
+              <button
+                type="button"
+                id="btn-open-user-profile"
+                onClick={onOpenProfile}
+                title={currentUser.email || currentUser.displayName || (isEn ? 'User Profile' : 'پروفایل کاربر')}
+                className="flex items-center gap-1.5 py-1 px-2 sm:px-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/80 transition-colors text-xs font-bold cursor-pointer"
+              >
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                  {userInitial}
+                </div>
+                <span className="hidden sm:inline truncate max-w-[95px] text-xs">
+                  {currentUser.displayName || currentUser.email?.split('@')[0]}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                id="btn-open-auth-login"
+                onClick={onOpenAuth}
+                className="flex items-center gap-1.5 py-1.5 px-2.5 sm:px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-xs font-bold cursor-pointer"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="text-xs">{isEn ? 'Sign In' : 'ورود / عضویت'}</span>
+              </button>
+            )}
+
             {/* Privacy Mode Toggle */}
             <button
               type="button"
@@ -97,7 +139,7 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
               )}
             </button>
 
-            {/* Live Date and Time (in top-left corner beside Settings icon) */}
+            {/* Live Date and Time */}
             <LiveDateTime
               language={lang}
               usePersianDigits={settings.usePersianDigits !== false}

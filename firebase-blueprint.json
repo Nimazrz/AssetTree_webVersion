@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile document",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "User identifier" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserPortfolio": {
+      "title": "User Portfolio Data",
+      "description": "User private asset tree data and settings",
+      "type": "object",
+      "properties": {
+        "treeRoot": { "type": "object", "description": "Root node of the hierarchical asset tree" },
+        "settings": { "type": "object", "description": "User display and currency settings" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last synchronization timestamp" }
+      },
+      "required": ["treeRoot"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "entity": "User",
+      "description": "User profile document restricted to the authenticated owner"
+    },
+    "/users/{userId}/portfolio/{docId}": {
+      "entity": "UserPortfolio",
+      "description": "User asset tree and preference documents restricted to the owner"
+    }
+  }
+}
