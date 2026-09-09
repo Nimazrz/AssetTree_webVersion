@@ -27,6 +27,7 @@ import {
   loadUserPortfolioFromFirestore,
   saveUserPortfolioToFirestore,
 } from './lib/firebase';
+import { Analytics } from '@vercel/analytics/react';
 
 // Views
 import { ModernTreeView } from './views/ModernTreeView';
@@ -718,6 +719,7 @@ export const App: React.FC = () => {
           );
         }}
       />
+      <Analytics />
     </div>
   );
 };
