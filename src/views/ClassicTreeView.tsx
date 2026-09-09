@@ -30,6 +30,8 @@ interface ClassicTreeViewProps {
   onMoveNode: (node: CalculatedNode) => void;
   onDeleteNode: (node: CalculatedNode) => void;
   searchQuery?: string;
+  expandAllSignal?: number;
+  collapseAllSignal?: number;
 }
 
 export const ClassicTreeView: React.FC<ClassicTreeViewProps> = ({
@@ -41,6 +43,8 @@ export const ClassicTreeView: React.FC<ClassicTreeViewProps> = ({
   onMoveNode,
   onDeleteNode,
   searchQuery,
+  expandAllSignal,
+  collapseAllSignal,
 }) => {
   const [collapsedMap, setCollapsedMap] = useState<Record<string, boolean>>({});
   const lang: AppLanguage = settings.language || 'fa';
@@ -53,6 +57,34 @@ export const ClassicTreeView: React.FC<ClassicTreeViewProps> = ({
     e.stopPropagation();
     setCollapsedMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const collapseAll = () => {
+    const next: Record<string, boolean> = {};
+    const traverse = (node: CalculatedNode) => {
+      if (node.isGroup && node.depth > 0) {
+        next[node.id] = true;
+      }
+      node.children.forEach(traverse);
+    };
+    traverse(rootCalculated);
+    setCollapsedMap(next);
+  };
+
+  const expandAll = () => {
+    setCollapsedMap({});
+  };
+
+  React.useEffect(() => {
+    if (expandAllSignal && expandAllSignal > 0) {
+      expandAll();
+    }
+  }, [expandAllSignal]);
+
+  React.useEffect(() => {
+    if (collapseAllSignal && collapseAllSignal > 0) {
+      collapseAll();
+    }
+  }, [collapseAllSignal]);
 
   const renderRow = (node: CalculatedNode) => {
     const isRoot = node.id === rootCalculated.id;

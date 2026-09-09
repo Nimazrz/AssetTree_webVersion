@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { CalculatedNode, DisplaySettings, AppLanguage } from '../types';
 import { getPaletteForNode } from '../utils/assetColors';
 import {
@@ -21,8 +21,23 @@ export const BarChartView: React.FC<BarChartProps> = ({
 }) => {
   const [viewLevel, setViewLevel] = useState<'CATEGORIES' | 'LEAF_ASSETS'>('CATEGORIES');
   const [sortDirection, setSortDirection] = useState<'DESC' | 'ASC'>('DESC');
+  const [selectedNode, setSelectedNode] = useState<CalculatedNode | null>(null);
+  const lastClickRef = useRef<{ id: string; time: number }>({ id: '', time: 0 });
   const lang: AppLanguage = settings.language || 'fa';
   const isEn = lang === 'en';
+
+  // Vazife 8: 1 click/tap selects/toggles, 2 clicks/taps opens properties and details menu
+  const handleItemClick = (node: CalculatedNode) => {
+    const now = Date.now();
+    if (lastClickRef.current.id === node.id && now - lastClickRef.current.time < 380) {
+      onSelectNodeDetails(node);
+      lastClickRef.current = { id: '', time: 0 };
+      return;
+    }
+
+    lastClickRef.current = { id: node.id, time: now };
+    setSelectedNode((prev) => (prev?.id === node.id ? null : node));
+  };
 
   // Extract items based on viewLevel
   const items = useMemo(() => {
@@ -118,12 +133,19 @@ export const BarChartView: React.FC<BarChartProps> = ({
             const palette = getPaletteForNode(node.name, node.categoryTag, settings.customAssetColors);
             const barWidthPercent = Math.max(2, (node.totalValue / maxVal) * 100);
 
+            const isSelected = selectedNode?.id === node.id;
+
             return (
               <div
                 key={node.id}
                 id={`bar-item-${node.id}`}
-                onClick={() => onSelectNodeDetails(node)}
-                className="flex flex-col gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                onClick={() => handleItemClick(node)}
+                onDoubleClick={() => onSelectNodeDetails(node)}
+                className={`flex flex-col gap-1 sm:gap-1.5 p-1.5 sm:p-2.5 rounded-xl cursor-pointer transition-all border ${
+                  isSelected
+                    ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-400 dark:border-blue-600 shadow-xs'
+                    : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                }`}
               >
                 <div className="flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">

@@ -22,6 +22,7 @@ import {
   ArrowRight,
   ShieldAlert,
   Sparkles,
+  Coins,
 } from 'lucide-react';
 import { TRANSLATIONS } from '../i18n/translations';
 
@@ -35,6 +36,7 @@ interface SettingsDialogProps {
   onWipeToZero: () => void;
   onOpenExcelImport: () => void;
   onOpenSymbolBook: () => void;
+  onOpenPriceTable?: () => void;
 }
 
 type SettingsTab = 'appearance' | 'data' | 'backup';
@@ -49,6 +51,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   onWipeToZero,
   onOpenExcelImport,
   onOpenSymbolBook,
+  onOpenPriceTable,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -472,6 +475,45 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   </button>
                 </div>
               </div>
+
+              {/* Price Table Card (جدول نرخ واحد دارایی‌ها) */}
+              {onOpenPriceTable && (
+                <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/30 flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 shadow-2xs">
+                        <Coins className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
+                          {isEn ? 'Asset Price Table & Currency Rates' : 'جدول قیمت واحد و نرخ دارایی‌ها (Price Table)'}
+                        </h4>
+                        <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">
+                          {isEn ? 'Gold, Currencies, Crypto, Stocks & Real Estate' : 'طلا، ارز، رمزارز، سهام و مسکن'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {isEn
+                      ? 'Central ledger for asset unit prices and market values with automatic bidirectional sync across the portfolio tree.'
+                      : 'مدیریت متمرکز قیمت واحد انواع دارایی‌ها و نرخ‌های بازار با امکان همگام‌سازی خودکار و دوطرفه روی تمام گره‌های درخت دارایی.'}
+                  </p>
+
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      id="btn-settings-open-price-table"
+                      onClick={onOpenPriceTable}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+                    >
+                      <Coins className="w-4 h-4" />
+                      <span>{isEn ? 'Open Asset Price Table' : 'مشاهده و ویرایش جدول نرخ‌ها'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

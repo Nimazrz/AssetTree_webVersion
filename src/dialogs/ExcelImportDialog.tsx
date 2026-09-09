@@ -36,6 +36,7 @@ interface ExcelImportDialogProps {
     skipAllDuplicates: boolean,
     confirmDeleteAbsentStocks: boolean
   ) => void;
+  onBackToSettings?: () => void;
 }
 
 export const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
@@ -45,6 +46,7 @@ export const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
   settings,
   onClose,
   onApplyPlan,
+  onBackToSettings,
 }) => {
   // Wizard steps: 0=INPUT, 1=ANOMALIES, 2=DUPLICATES, 3=ABSENT_STOCKS, 4=FINAL_CONFIRM
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -172,13 +174,28 @@ export const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onBackToSettings && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onBackToSettings();
+                }}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+              >
+                <span>بازگشت به تنظیمات</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Wizard Steps Content */}

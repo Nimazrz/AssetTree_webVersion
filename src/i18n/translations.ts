@@ -137,7 +137,7 @@ export const TRANSLATIONS = {
     colPrice: { fa: 'قیمت واحد', en: 'Unit Price' },
     colTotalValue: { fa: 'ارزش کل', en: 'Total Value' },
     colPercentTotal: { fa: 'درصد از کل', en: '% of Total' },
-    colPercentGroup: { fa: 'درصد از والد', en: '% of Parent' },
+    colPercentGroup: { fa: 'درصد از هم‌گروه', en: '% of Peer Group' },
     colActions: { fa: 'عملیات', en: 'Actions' },
   },
   analytics: {

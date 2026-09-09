@@ -39,6 +39,8 @@ interface ModernTreeViewProps {
   onDeleteNode: (node: CalculatedNode) => void;
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
+  expandAllSignal?: number;
+  collapseAllSignal?: number;
 }
 
 export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
@@ -53,6 +55,8 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
   onDeleteNode,
   searchQuery: externalSearchQuery,
   onSearchChange,
+  expandAllSignal,
+  collapseAllSignal,
 }) => {
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
@@ -85,6 +89,18 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
   const expandAll = () => {
     setCollapsedMap({});
   };
+
+  React.useEffect(() => {
+    if (expandAllSignal && expandAllSignal > 0) {
+      expandAll();
+    }
+  }, [expandAllSignal]);
+
+  React.useEffect(() => {
+    if (collapseAllSignal && collapseAllSignal > 0) {
+      collapseAll();
+    }
+  }, [collapseAllSignal]);
 
   // Node renderer
   const renderNode = (node: CalculatedNode) => {
@@ -327,7 +343,7 @@ export const ModernTreeView: React.FC<ModernTreeViewProps> = ({
     { field: 'QUANTITY', label: isEn ? 'Quantity' : 'تعداد/مقدار' },
     { field: 'UNIT_PRICE', label: isEn ? 'Unit Price' : 'قیمت واحد' },
     { field: 'PERCENT_OF_TOTAL', label: isEn ? '% of Total' : 'درصد از کل' },
-    { field: 'PERCENT_OF_GROUP', label: isEn ? '% of Group' : 'درصد از گروه' },
+    { field: 'PERCENT_OF_GROUP', label: isEn ? '% of Peer Group' : 'درصد از هم‌گروه' },
   ];
 
   return (

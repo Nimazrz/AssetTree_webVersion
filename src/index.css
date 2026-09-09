@@ -116,3 +116,31 @@
     margin: 0 !important;
   }
 }
+
+/* Continuous Marquee Ticker (Speed halved per Vazife 2) */
+@keyframes ticker-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+.animate-ticker {
+  display: flex;
+  width: max-content;
+  animation: ticker-marquee 152s linear infinite;
+}
+
+.animate-ticker-fast {
+  display: flex;
+  width: max-content;
+  animation: ticker-marquee 120s linear infinite;
+}
+
+.animate-ticker:hover,
+.animate-ticker-fast:hover,
+.ticker-paused {
+  animation-play-state: paused !important;
+}

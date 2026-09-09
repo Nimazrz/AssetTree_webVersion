@@ -6,16 +6,55 @@
 export const ROOT_NODE_ID = "root";
 export const ROOT_NODE_NAME = "پرتفوی جامع دارایی‌ها";
 
+export const DEFAULT_ASSET_TYPES: string[] = [
+  'طلا',
+  'نقره',
+  'مس',
+  'ارز',
+  'ارزدیجیتال',
+  'ریال',
+  'تومان',
+  'دلار',
+  'کوین',
+  'میم کوین',
+  'صندوق درآمدثابت',
+  'سهام',
+  'سهام بانکی',
+  'سهام اوره ای',
+  'سهام خودرویی',
+  'سهام پتروشیمی',
+  'سهام دارویی',
+  'نقدینگی',
+  'ملک',
+  'اپارتمان',
+  'زمین مسکونی',
+  'زمین تجاری',
+  'مغازه',
+  'کارخانه',
+];
+
 export interface StoredNodeEntity {
   id: string;
   parentId: string | null;
   name: string;
+  symbol?: string | null;
+  assetType?: string | null;
   quantity: number;
   unit: string;
   unitPrice: number;
   createdAt: number;
   updatedAt?: number | null;
   categoryTag?: string | null;
+}
+
+export interface AssetPriceItem {
+  id: string;
+  name: string;
+  symbol?: string | null;
+  unit: string;
+  unitPrice: number; // In Rials
+  assetType?: string | null;
+  updatedAt: number;
 }
 
 export interface SymbolEntryEntity {
@@ -39,6 +78,8 @@ export interface CalculatedNode {
   id: string;
   parentId: string | null;
   name: string;
+  symbol?: string | null;
+  assetType?: string | null;
   quantity: number;
   unit: string;
   unitPrice: number;
@@ -86,6 +127,7 @@ export interface DisplaySettings {
   customAppColor: string;
   customViewOrder: AppViewMode[];
   customAssetColors: Record<string, string>;
+  viewMenuPosition?: 'TOP' | 'BOTTOM_FLOAT';
 }
 
 export type SortField =

@@ -103,6 +103,8 @@ export const TreeEngine = {
         id: node.id,
         parentId: node.parentId,
         name: node.name,
+        symbol: node.symbol,
+        assetType: node.assetType,
         quantity: isGroup ? 1.0 : node.quantity,
         unit: node.unit,
         unitPrice: isGroup ? totalValue : node.unitPrice,
@@ -286,13 +288,28 @@ export const TreeEngine = {
   // --- Symbol Book & Market Tools ---
 
   cleanRawSymbol(rawSymbol: string): string {
-    let cleaned = rawSymbol.trim();
-    const prefixes = ["ض", "ط", "اختیار", "ح", "پ", "صندوق", "گواهی"];
-    for (const pfx of prefixes) {
-      if (cleaned.startsWith(pfx) && cleaned.length > pfx.length + 1) {
+    if (!rawSymbol) return '';
+    let cleaned = rawSymbol
+      .replace(/[\u200B-\u200D\uFEFF\u200E\u200F]/g, '') // remove zero-width / bidirectional chars
+      .replace(/ي/g, 'ی')
+      .replace(/ك/g, 'ک')
+      .trim()
+      .replace(/^[«"'\(\[\{]+|[»"'\)\]\}]+$/g, '') // remove surrounding brackets/quotes
+      .trim();
+
+    // Strip explicit space prefixes like "صندوق ", "گواهی ", "اختیار "
+    const explicitPrefixes = ['صندوق ', 'گواهی ', 'اختیار '];
+    for (const pfx of explicitPrefixes) {
+      if (cleaned.startsWith(pfx)) {
         cleaned = cleaned.substring(pfx.length).trim();
       }
     }
+
+    // Option ticker e.g. "ضخود1200" or "طفول1402" (starts with ض or ط and ends with digits)
+    if (/^[ضط][^\d\s]{2,}\d+$/.test(cleaned)) {
+      cleaned = cleaned.substring(1).replace(/\d+$/, '').trim();
+    }
+
     return cleaned;
   },
 
@@ -301,11 +318,23 @@ export const TreeEngine = {
     symbolBook: SymbolEntryEntity[],
     companyNameHint?: string | null
   ): { canonicalName: string; industry: string; foundInBook: boolean } {
+    const normalize = (s: string) =>
+      s
+        .replace(/[\u200B-\u200D\uFEFF\u200E\u200F]/g, '')
+        .replace(/ي/g, 'ی')
+        .replace(/ك/g, 'ک')
+        .replace(/[\s_\-]+/g, '')
+        .toLowerCase()
+        .trim();
+
     const trimmed = rawSymbol.trim();
+    const normRaw = normalize(trimmed);
+
+    // 1. Direct or normalized match on rawSymbol or canonicalName
     const exact = symbolBook.find(
       (it) =>
-        it.rawSymbol.toLowerCase() === trimmed.toLowerCase() ||
-        it.canonicalName.toLowerCase() === trimmed.toLowerCase()
+        normalize(it.rawSymbol) === normRaw ||
+        normalize(it.canonicalName) === normRaw
     );
     if (exact) {
       return {
@@ -315,11 +344,13 @@ export const TreeEngine = {
       };
     }
 
+    // 2. Cleaned symbol match
     const cleaned = this.cleanRawSymbol(trimmed);
+    const normClean = normalize(cleaned);
     const cleanMatch = symbolBook.find(
       (it) =>
-        it.rawSymbol.toLowerCase() === cleaned.toLowerCase() ||
-        it.canonicalName.toLowerCase() === cleaned.toLowerCase()
+        normalize(it.rawSymbol) === normClean ||
+        normalize(it.canonicalName) === normClean
     );
     if (cleanMatch) {
       return {
@@ -329,7 +360,38 @@ export const TreeEngine = {
       };
     }
 
+    // 3. Right-of-share (حق تقدم): starts with "ح" + known base symbol e.g. "حفولاد" -> "فولاد"
+    if (trimmed.startsWith('ح') && trimmed.length > 2) {
+      const baseSymbol = trimmed.substring(1);
+      const normBase = normalize(baseSymbol);
+      const rightMatch = symbolBook.find(
+        (it) => normalize(it.rawSymbol) === normBase
+      );
+      if (rightMatch) {
+        return {
+          canonicalName: `حق تقدم ${rightMatch.canonicalName}`,
+          industry: rightMatch.industry,
+          foundInBook: true,
+        };
+      }
+    }
+
+    // 4. Match against company name hint (from Excel "نام شرکت" column)
     if (companyNameHint && companyNameHint.trim()) {
+      const normCompany = normalize(companyNameHint);
+      const companyMatch = symbolBook.find(
+        (it) =>
+          normCompany.includes(normalize(it.canonicalName)) ||
+          normalize(it.canonicalName).includes(normCompany) ||
+          normCompany.includes(normalize(it.rawSymbol))
+      );
+      if (companyMatch) {
+        return {
+          canonicalName: companyMatch.canonicalName,
+          industry: companyMatch.industry,
+          foundInBook: true,
+        };
+      }
       return {
         canonicalName: companyNameHint.trim(),
         industry: "سایر صنایع",
@@ -476,10 +538,75 @@ export const TreeEngine = {
       .filter((l) => l.length > 0);
     if (lines.length === 0) return [];
 
-    let delimiter = ' ';
-    if (lines[0].includes('\t')) delimiter = '\t';
-    else if (lines[0].includes(';')) delimiter = ';';
-    else if (lines[0].includes(',')) delimiter = ',';
+    // Detect delimiter across first several lines
+    let delimiter = '\t';
+    let tabCount = 0;
+    let commaCount = 0;
+    let semiCount = 0;
+
+    for (let i = 0; i < Math.min(lines.length, 5); i++) {
+      if (lines[i].includes('\t')) tabCount++;
+      if (lines[i].includes(',')) commaCount++;
+      if (lines[i].includes(';')) semiCount++;
+    }
+
+    if (tabCount > 0) delimiter = '\t';
+    else if (semiCount > 0) delimiter = ';';
+    else if (commaCount > 0) delimiter = ',';
+    else delimiter = ' ';
+
+    // Split line respecting quotes if comma-delimited
+    const splitLine = (l: string): string[] => {
+      if (delimiter !== ',') {
+        if (delimiter === ' ') {
+          return l.split(/\s{2,}|\t/).map((p) => p.trim().replace(/^["']|["']$/g, ''));
+        }
+        return l.split(delimiter).map((p) => p.trim().replace(/^["']|["']$/g, ''));
+      }
+      const parts: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < l.length; i++) {
+        const c = l[i];
+        if (c === '"') {
+          inQuotes = !inQuotes;
+        } else if (c === ',' && !inQuotes) {
+          parts.push(current.trim().replace(/^["']|["']$/g, ''));
+          current = '';
+        } else {
+          current += c;
+        }
+      }
+      parts.push(current.trim().replace(/^["']|["']$/g, ''));
+      return parts;
+    };
+
+    const toEnglishDigits = (str: string): string => {
+      return str
+        .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776))
+        .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632));
+    };
+
+    const parseNum = (s?: string): number => {
+      if (!s) return 0.0;
+      const clean = toEnglishDigits(s)
+        .replace(/,/g, '')
+        .replace(/،/g, '')
+        .replace(/\s+/g, '')
+        .trim();
+      const n = parseFloat(clean);
+      return isNaN(n) ? 0.0 : n;
+    };
+
+    const cleanSymbolText = (s?: string): string => {
+      if (!s) return '';
+      return s
+        .replace(/[\u200B-\u200D\uFEFF\u200E\u200F]/g, '')
+        .replace(/ي/g, 'ی')
+        .replace(/ك/g, 'ک')
+        .replace(/^[«"'\(\[\{]+|[»"'\)\]\}]+$/g, '')
+        .trim();
+    };
 
     const rows: RawBourseRow[] = [];
     let symbolCol = -1;
@@ -487,50 +614,73 @@ export const TreeEngine = {
     let rialValCol = -1;
     let companyCol = -1;
     let assetTypeCol = -1;
+    let statusCol = -1;
     let tradeableQtyCol = -1;
     let headerDetected = false;
 
     let otherAssetsTotalRial = 0.0;
     let otherAssetsTotalQty = 0.0;
 
-    const parseNum = (s?: string): number => {
-      if (!s) return 0.0;
-      const clean = s.replace(/,/g, '').replace(/،/g, '').replace(/\s+/g, '').trim();
-      const n = parseFloat(clean);
-      return isNaN(n) ? 0.0 : n;
-    };
-
     lines.forEach((line, idx) => {
-      const parts = line.split(delimiter).map((p) => p.trim());
+      const parts = splitLine(line);
       if (parts.length === 0 || parts.every((p) => p.length === 0)) return;
 
-      // Header line detection
+      // Header line detection (matches user format: ردیف کد سهامداری نماد نام شرکت تعداد سهم میزان دارایی قابل معامله ارزش ریالی درصد از کل نوع دارایی کارگزار ناظر وضعیت)
       if (
         !headerDetected &&
         (line.includes("نماد") ||
-          line.includes("سهم") ||
+          line.includes("سهام") ||
           line.includes("ارزش") ||
           line.includes("تعداد") ||
-          line.includes("دارایی"))
+          line.includes("دارایی") ||
+          line.includes("ردیف"))
       ) {
         headerDetected = true;
         parts.forEach((headerTitle, pIdx) => {
           const h = headerTitle.replace(/\s+/g, "");
-          if (h.includes("نماد") && symbolCol === -1) symbolCol = pIdx;
+          if (
+            (h === "نماد" || (h.includes("نماد") && !h.includes("کد"))) &&
+            symbolCol === -1
+          ) {
+            symbolCol = pIdx;
+          }
           if (
             (h.includes("شرکت") || h.includes("نام") || h.includes("شرح")) &&
             companyCol === -1 &&
-            !h.includes("نوع")
+            !h.includes("نوع") &&
+            !h.includes("نماد") &&
+            !h.includes("کد")
           ) {
             companyCol = pIdx;
           }
-          if (h.includes("نوع") || h.includes("وضعیت")) assetTypeCol = pIdx;
-          if (h.includes("قابل") && h.includes("تعداد")) tradeableQtyCol = pIdx;
-          if ((h.includes("تعداد") || h.includes("حجم")) && qtyCol === -1) {
+          if (h.includes("نوع") && !h.includes("وضعیت") && assetTypeCol === -1) {
+            assetTypeCol = pIdx;
+          }
+          if ((h.includes("وضعیت") || h.includes("وضع")) && statusCol === -1) {
+            statusCol = pIdx;
+          }
+          // Column: میزان دارایی قابل معامله or تعداد قابل معامله
+          if (
+            (h.includes("قابل") || h.includes("معامله")) &&
+            (h.includes("تعداد") || h.includes("میزان") || h.includes("دارایی") || h.includes("سهم")) &&
+            tradeableQtyCol === -1
+          ) {
+            tradeableQtyCol = pIdx;
+          }
+          // Column: تعداد سهم (ensure not matching کد سهامداری or قابل معامله)
+          if (
+            (h.includes("تعداد") || h.includes("حجم") || h.includes("سهم")) &&
+            !h.includes("قابل") &&
+            !h.includes("معامله") &&
+            !h.includes("کد") &&
+            !h.includes("ارزش") &&
+            qtyCol === -1
+          ) {
             qtyCol = pIdx;
           }
+          // Column: ارزش ریالی or مبلغ
           if (
-            (h.includes("ارزش") || h.includes("مبلغ") || h.includes("خالص")) &&
+            (h.includes("ارزش") || h.includes("مبلغ") || h.includes("خالص") || h.includes("قیمتکل")) &&
             rialValCol === -1
           ) {
             rialValCol = pIdx;
@@ -540,10 +690,16 @@ export const TreeEngine = {
       }
 
       if (parts.length >= 2) {
-        const symbol =
-          symbolCol >= 0 && symbolCol < parts.length
-            ? parts[symbolCol]
-            : parts[1] || parts[0];
+        let symbol = cleanSymbolText(
+          symbolCol >= 0 && symbolCol < parts.length ? parts[symbolCol] : parts[1] || parts[0]
+        );
+
+        // If symbol mistakenly caught a pure integer row number (e.g. "1"), find the real symbol column
+        if (/^\d+$/.test(symbol)) {
+          const candidate = parts.find((p) => p.length >= 2 && p.length <= 15 && !/^\d+$/.test(p) && !p.includes('140') && !p.includes('/'));
+          if (candidate) symbol = cleanSymbolText(candidate);
+        }
+
         const qty =
           qtyCol >= 0 && qtyCol < parts.length
             ? parseNum(parts[qtyCol])
@@ -554,33 +710,38 @@ export const TreeEngine = {
             : parseNum(parts[5]);
         const company =
           companyCol >= 0 && companyCol < parts.length
-            ? parts[companyCol]
+            ? parts[companyCol]?.trim()
             : parts[2] || null;
         const rawAssetType =
           assetTypeCol >= 0 && assetTypeCol < parts.length
-            ? parts[assetTypeCol]
-            : parts[4] || "قابل معامله";
+            ? parts[assetTypeCol]?.trim()
+            : "قابل معامله";
+        const rawStatus =
+          statusCol >= 0 && statusCol < parts.length
+            ? parts[statusCol]?.trim()
+            : "";
         const tradeableQty =
           tradeableQtyCol >= 0 && tradeableQtyCol < parts.length
             ? parseNum(parts[tradeableQtyCol])
             : null;
 
-        if (onlyTradeable && rawAssetType) {
-          const isTradeable =
-            rawAssetType.includes("قابل معامله") ||
-            rawAssetType.includes("عادی") ||
-            rawAssetType.includes("صندوق") ||
-            rawAssetType.includes("معامله") ||
-            rawAssetType.toLowerCase() === "بله" ||
-            rawAssetType === "1";
-
+        // Tradeability filter (Vazife 11 fix):
+        // Only discard if explicitly non-tradeable or locked. Allow "مجاز", "سهام", "صندوق", "عادی", "بورس", "فرابورس", etc.
+        if (onlyTradeable) {
+          const combinedTypeStatus = `${rawAssetType} ${rawStatus}`;
           const isExplicitlyNonTradeable =
-            rawAssetType.includes("غیرقابل") ||
-            rawAssetType.includes("غیر قابل") ||
-            rawAssetType.includes("متوقف") ||
-            rawAssetType.includes("مسدود");
+            combinedTypeStatus.includes("غیرقابل") ||
+            combinedTypeStatus.includes("غیر قابل") ||
+            combinedTypeStatus.includes("مسدود") ||
+            combinedTypeStatus.includes("بسته") ||
+            combinedTypeStatus.includes("ممنوع-متوقف");
 
-          if (!isTradeable || isExplicitlyNonTradeable) {
+          if (isExplicitlyNonTradeable) {
+            return;
+          }
+
+          // If tradeableQty is explicitly specified as 0 while total quantity is > 0 and status says non-tradeable
+          if (tradeableQty !== null && tradeableQty <= 0 && qty > 0 && combinedTypeStatus.includes("غیر")) {
             return;
           }
         }
@@ -708,6 +869,48 @@ export const TreeEngine = {
         rawRowNumber: 9,
       },
     ];
+  },
+
+  groupAssetsByType(rootCalculated: CalculatedNode): {
+    assetType: string;
+    totalValue: number;
+    percentOfTotal: number;
+    count: number;
+    nodes: CalculatedNode[];
+  }[] {
+    const map = new Map<string, { totalValue: number; nodes: CalculatedNode[] }>();
+    const traverse = (node: CalculatedNode) => {
+      if (!node.isGroup && node.depth > 0) {
+        const typeKey = (node.assetType && node.assetType.trim()) || 'سایر / نامشخص';
+        const existing = map.get(typeKey) || { totalValue: 0, nodes: [] };
+        existing.totalValue += node.totalValue;
+        existing.nodes.push(node);
+        map.set(typeKey, existing);
+      }
+      node.children.forEach(traverse);
+    };
+    traverse(rootCalculated);
+
+    const rootTotal = rootCalculated.totalValue > 0 ? rootCalculated.totalValue : 1;
+    const result: {
+      assetType: string;
+      totalValue: number;
+      percentOfTotal: number;
+      count: number;
+      nodes: CalculatedNode[];
+    }[] = [];
+
+    map.forEach((val, key) => {
+      result.push({
+        assetType: key,
+        totalValue: val.totalValue,
+        percentOfTotal: (val.totalValue / rootTotal) * 100,
+        count: val.nodes.length,
+        nodes: val.nodes,
+      });
+    });
+
+    return result.sort((a, b) => b.totalValue - a.totalValue);
   },
 };
 

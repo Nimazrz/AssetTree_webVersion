@@ -46,6 +46,7 @@ import { DeleteNodeDialog } from './dialogs/DeleteNodeDialog';
 import { ExcelImportDialog } from './dialogs/ExcelImportDialog';
 import { SymbolBookDialog } from './dialogs/SymbolBookDialog';
 import { SettingsDialog } from './dialogs/SettingsDialog';
+import { PriceTableDialog } from './dialogs/PriceTableDialog';
 import { UndoHistoryDialog } from './dialogs/UndoHistoryDialog';
 import { AuthDialog, AuthMode } from './dialogs/AuthDialog';
 import { UserProfileDialog } from './dialogs/UserProfileDialog';
@@ -213,8 +214,23 @@ export const App: React.FC = () => {
   const [selectedDeleteNode, setSelectedDeleteNode] = useState<CalculatedNode | null>(null);
   const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
   const [isSymbolBookOpen, setIsSymbolBookOpen] = useState(false);
+  const [isPriceTableOpen, setIsPriceTableOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isUndoHistoryOpen, setIsUndoHistoryOpen] = useState(false);
+
+  // Tree Expand / Collapse Signals
+  const [expandAllSignal, setExpandAllSignal] = useState<number>(0);
+  const [collapseAllSignal, setCollapseAllSignal] = useState<number>(0);
+
+  const handleExpandAll = () => {
+    setExpandAllSignal((prev) => prev + 1);
+    showToast('همه شاخه‌های درخت باز شدند.');
+  };
+
+  const handleCollapseAll = () => {
+    setCollapseAllSignal((prev) => prev + 1);
+    showToast('همه شاخه‌های درخت بسته شدند.');
+  };
 
   // Core Bottom-Up Evaluation
   const evaluatedTree = useMemo(() => {
@@ -247,10 +263,12 @@ export const App: React.FC = () => {
     name: string,
     unitPrice: number,
     quantity: number,
-    unit: string
+    unit: string,
+    symbol?: string | null,
+    assetType?: string | null
   ) => {
     if (!selectedAddChildParent) return;
-    assetStorage.addChild(selectedAddChildParent.id, name, unitPrice, quantity, unit);
+    assetStorage.addChild(selectedAddChildParent.id, name, unitPrice, quantity, unit, symbol, assetType);
     reloadFromStorage();
     setSelectedAddChildParent(null);
     showToast(`دارایی «${name}» با موفقیت افزوده شد.`);
@@ -261,9 +279,11 @@ export const App: React.FC = () => {
     name: string,
     quantity: number,
     unit: string,
-    unitPrice: number
+    unitPrice: number,
+    symbol?: string | null,
+    assetType?: string | null
   ) => {
-    assetStorage.editNode(nodeId, name, quantity, unit, unitPrice);
+    assetStorage.editNode(nodeId, name, quantity, unit, unitPrice, symbol, assetType);
     reloadFromStorage();
     setSelectedEditNode(null);
     showToast(`دارایی «${name}» به‌روزرسانی شد.`);
@@ -407,8 +427,6 @@ export const App: React.FC = () => {
         <PortfolioSummaryBar
           rootCalculated={sortedRoot}
           settings={settings}
-          onOpenAddRootAsset={() => setSelectedAddChildParent(sortedRoot)}
-          onOpenChart={() => setActiveView('CHART')}
         />
 
         {/* Search Box and Chart Type Selection Menu (منوی انتخاب نوع نمودار در زیر باکس جستجو) */}
@@ -418,8 +436,11 @@ export const App: React.FC = () => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           settings={settings}
+          onUpdateSettings={handleUpdateSettings}
           sortConfig={sortConfig}
           onUpdateSort={handleUpdateSortConfig}
+          onExpandAll={handleExpandAll}
+          onCollapseAll={handleCollapseAll}
         />
 
         {/* View Switcher Container */}
@@ -436,6 +457,8 @@ export const App: React.FC = () => {
             onDeleteNode={setSelectedDeleteNode}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            expandAllSignal={expandAllSignal}
+            collapseAllSignal={collapseAllSignal}
           />
         )}
 
@@ -449,6 +472,8 @@ export const App: React.FC = () => {
             onMoveNode={setSelectedMoveNode}
             onDeleteNode={setSelectedDeleteNode}
             searchQuery={searchQuery}
+            expandAllSignal={expandAllSignal}
+            collapseAllSignal={collapseAllSignal}
           />
         )}
 
@@ -532,6 +557,8 @@ export const App: React.FC = () => {
         <AddChildDialog
           parentNode={selectedAddChildParent}
           settings={settings}
+          allNodes={evaluatedTree.allCalculated}
+          priceTable={assetStorage.getPriceTable()}
           onClose={() => setSelectedAddChildParent(null)}
           onSave={handleAddChild}
         />
@@ -541,9 +568,10 @@ export const App: React.FC = () => {
         <EditNodeDialog
           node={selectedEditNode}
           settings={settings}
+          allNodes={evaluatedTree.allCalculated}
           onClose={() => setSelectedEditNode(null)}
-          onSave={(name, unitPriceRials, quantity, unit) =>
-            handleEditNode(selectedEditNode.id, name, quantity, unit, unitPriceRials)
+          onSave={(name, unitPriceRials, quantity, unit, symbol, assetType) =>
+            handleEditNode(selectedEditNode.id, name, quantity, unit, unitPriceRials, symbol, assetType)
           }
         />
       )}
@@ -574,6 +602,10 @@ export const App: React.FC = () => {
           settings={settings}
           onClose={() => setIsExcelImportOpen(false)}
           onApplyPlan={handleApplyImportPlan}
+          onBackToSettings={() => {
+            setIsExcelImportOpen(false);
+            setIsSettingsOpen(true);
+          }}
         />
       )}
 
@@ -584,6 +616,10 @@ export const App: React.FC = () => {
           onAddSymbol={handleAddSymbol}
           onDeleteSymbol={handleDeleteSymbol}
           onResetToDefaults={handleResetSymbolBook}
+          onBackToSettings={() => {
+            setIsSymbolBookOpen(false);
+            setIsSettingsOpen(true);
+          }}
         />
       )}
 
@@ -603,6 +639,31 @@ export const App: React.FC = () => {
           onOpenSymbolBook={() => {
             setIsSettingsOpen(false);
             setIsSymbolBookOpen(true);
+          }}
+          onOpenPriceTable={() => {
+            setIsSettingsOpen(false);
+            setIsPriceTableOpen(true);
+          }}
+        />
+      )}
+
+      {isPriceTableOpen && (
+        <PriceTableDialog
+          priceTable={assetStorage.getPriceTable()}
+          settings={settings}
+          onClose={() => setIsPriceTableOpen(false)}
+          onSavePriceTable={(items) => {
+            assetStorage.savePriceTable(items);
+            reloadFromStorage();
+          }}
+          onApplyToTree={() => {
+            const res = assetStorage.syncPricesToNodes();
+            reloadFromStorage();
+            return res;
+          }}
+          onBackToSettings={() => {
+            setIsPriceTableOpen(false);
+            setIsSettingsOpen(true);
           }}
         />
       )}

@@ -1,6 +1,9 @@
 import { AssetTemplateItem } from '../types';
 
 export const DEFAULT_ASSET_TEMPLATES: AssetTemplateItem[] = [
+  { id: "gold_18k", name: "طلا ۱۸ عیار", unit: "گرم" },
+  { id: "gold_20k", name: "طلا ۲۰ عیار", unit: "گرم" },
+  { id: "gold_24k", name: "طلا ۲۴ عیار", unit: "گرم" },
   { id: "1", name: "سکه امامی", unit: "عدد" },
   { id: "2", name: "سکه بهار آزادی", unit: "عدد" },
   { id: "3", name: "نیم سکه", unit: "عدد" },

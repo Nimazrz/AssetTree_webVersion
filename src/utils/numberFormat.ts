@@ -36,7 +36,7 @@ export function formatNumberWithCommas(
 
   const formatted = parts.join('.');
   if (language === 'fa' && usePersianDigits) {
-    return toPersianDigits(formatted).replace(/,/g, '،');
+    return toPersianDigits(formatted).replace(/,/g, '،').replace(/\./g, '/');
   }
   return formatted;
 }
@@ -80,19 +80,19 @@ export function formatCurrency(
   if (absAmount >= 1_000_000_000_000) {
     const valInHemmat = displayAmount / 1_000_000_000_000;
     const formatted = valInHemmat.toFixed(2).replace(/\.?0+$/, '');
-    const finalNum = shouldPersianize ? toPersianDigits(formatted) : formatted;
+    const finalNum = shouldPersianize ? toPersianDigits(formatted).replace(/\./g, '/') : formatted;
     const label = isEn ? 'T' : (isToman ? 'همت' : 'هزار م.م.ر');
     return `${finalNum} ${label}`;
   } else if (absAmount >= 1_000_000_000) {
     const valInBillion = displayAmount / 1_000_000_000;
     const formatted = valInBillion.toFixed(1).replace(/\.?0+$/, '');
-    const finalNum = shouldPersianize ? toPersianDigits(formatted) : formatted;
+    const finalNum = shouldPersianize ? toPersianDigits(formatted).replace(/\./g, '/') : formatted;
     const label = isEn ? 'B' : (isToman ? 'م.م.ت' : 'م.م.ر');
     return `${finalNum} ${label}`;
   } else if (absAmount >= 1_000_000) {
     const valInMillion = displayAmount / 1_000_000;
     const formatted = valInMillion.toFixed(1).replace(/\.?0+$/, '');
-    const finalNum = shouldPersianize ? toPersianDigits(formatted) : formatted;
+    const finalNum = shouldPersianize ? toPersianDigits(formatted).replace(/\./g, '/') : formatted;
     const label = isEn ? 'M' : (isToman ? 'م.ت' : 'م.ر');
     return `${finalNum} ${label}`;
   } else if (absAmount >= 1_000) {
@@ -129,7 +129,7 @@ export function formatPercentage(
 
   if (isNaN(percent) || percent === 0) {
     const zero = decimalPlaces === 0 ? '0' : (0).toFixed(decimalPlaces);
-    const res = shouldPersianize ? toPersianDigits(zero) : zero;
+    const res = shouldPersianize ? toPersianDigits(zero).replace(/\./g, '/') : zero;
     return isEn ? `${res}%` : `${res}٪`;
   }
 
@@ -137,7 +137,7 @@ export function formatPercentage(
   if (isEn) {
     return `${formatted}%`;
   }
-  const res = shouldPersianize ? toPersianDigits(formatted).replace('.', '/') : formatted;
+  const res = shouldPersianize ? toPersianDigits(formatted).replace(/\./g, '/') : formatted;
   return `${res}٪`;
 }
 

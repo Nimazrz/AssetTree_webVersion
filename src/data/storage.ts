@@ -11,6 +11,7 @@ import {
   DisplaySettings,
   SortConfig,
   ImportPlan,
+  AssetPriceItem,
   ROOT_NODE_ID,
   ROOT_NODE_NAME,
 } from '../types';
@@ -22,6 +23,7 @@ const STORAGE_KEY_NODES = 'asset_tree_nodes';
 const STORAGE_KEY_SYMBOLS = 'asset_tree_symbols';
 const STORAGE_KEY_SETTINGS = 'asset_tree_settings';
 const STORAGE_KEY_SORT = 'asset_tree_sort';
+const STORAGE_KEY_PRICE_TABLE = 'asset_tree_price_table';
 
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showPercentOfTotal: true,
@@ -72,6 +74,10 @@ export class AssetStorage {
 
   private getSettingsKey(): string {
     return this.activeUserId ? `${STORAGE_KEY_SETTINGS}_${this.activeUserId}` : STORAGE_KEY_SETTINGS;
+  }
+
+  private getPricesKey(): string {
+    return this.activeUserId ? `${STORAGE_KEY_PRICE_TABLE}_${this.activeUserId}` : STORAGE_KEY_PRICE_TABLE;
   }
 
   setActiveUser(userId: string | null) {
@@ -240,6 +246,137 @@ export class AssetStorage {
     return false;
   }
 
+  // --- Global Price Table (جدول قیمت واحد دارایی) ---
+
+  getPriceTableKey(): string {
+    return this.activeUserId ? `${STORAGE_KEY_PRICE_TABLE}_${this.activeUserId}` : STORAGE_KEY_PRICE_TABLE;
+  }
+
+  getPriceTable(): AssetPriceItem[] {
+    try {
+      const data = localStorage.getItem(this.getPriceTableKey());
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading price table:', e);
+    }
+    // Auto-seed price table from current nodes
+    return this.syncPriceTableFromNodes();
+  }
+
+  savePriceTable(items: AssetPriceItem[]) {
+    try {
+      localStorage.setItem(this.getPriceTableKey(), JSON.stringify(items));
+    } catch (e) {
+      console.warn('Error saving price table:', e);
+    }
+  }
+
+  syncPriceTableFromNodes(): AssetPriceItem[] {
+    const nodes = this.getNodes();
+    const existingTable: AssetPriceItem[] = [];
+    try {
+      const raw = localStorage.getItem(this.getPriceTableKey());
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) existingTable.push(...parsed);
+      }
+    } catch {}
+
+    const tableMap = new Map<string, AssetPriceItem>();
+    for (const it of existingTable) {
+      tableMap.set(it.name.trim().toLowerCase(), it);
+    }
+
+    // Add/update from leaf nodes with positive prices
+    for (const node of nodes) {
+      if (node.parentId !== null && node.name.trim()) {
+        const key = node.name.trim().toLowerCase();
+        const existing = tableMap.get(key);
+        if (!existing) {
+          tableMap.set(key, {
+            id: `price_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            name: node.name.trim(),
+            symbol: node.symbol || null,
+            unit: node.unit || 'واحد',
+            unitPrice: node.unitPrice || 0,
+            assetType: node.assetType || null,
+            updatedAt: node.updatedAt || node.createdAt || Date.now(),
+          });
+        } else if (node.unitPrice > 0 && existing.unitPrice === 0) {
+          existing.unitPrice = node.unitPrice;
+          existing.unit = node.unit || existing.unit;
+          if (node.symbol) existing.symbol = node.symbol;
+          if (node.assetType) existing.assetType = node.assetType;
+          existing.updatedAt = Date.now();
+        }
+      }
+    }
+
+    const result = Array.from(tableMap.values());
+    this.savePriceTable(result);
+    return result;
+  }
+
+  recordOrUpdatePriceItem(name: string, unitPrice: number, unit: string, symbol?: string | null, assetType?: string | null) {
+    if (!name.trim()) return;
+    const table = this.getPriceTable();
+    const cleanName = name.trim();
+    const existing = table.find((it) => it.name.trim().toLowerCase() === cleanName.toLowerCase());
+
+    if (existing) {
+      existing.unitPrice = unitPrice;
+      if (unit && unit.trim()) existing.unit = unit.trim();
+      if (symbol !== undefined) existing.symbol = symbol || null;
+      if (assetType !== undefined) existing.assetType = assetType || null;
+      existing.updatedAt = Date.now();
+    } else {
+      table.push({
+        id: `price_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        name: cleanName,
+        symbol: symbol || null,
+        unit: unit.trim() || 'واحد',
+        unitPrice,
+        assetType: assetType || null,
+        updatedAt: Date.now(),
+      });
+    }
+    this.savePriceTable(table);
+  }
+
+  applyPriceTableToNodes(): { updatedCount: number } {
+    const table = this.getPriceTable();
+    const priceMap = new Map<string, number>();
+    for (const item of table) {
+      if (item.unitPrice > 0) {
+        priceMap.set(item.name.trim().toLowerCase(), item.unitPrice);
+      }
+    }
+
+    const nodes = this.getNodes();
+    let updatedCount = 0;
+    const nextNodes = nodes.map((node) => {
+      const matchPrice = priceMap.get(node.name.trim().toLowerCase());
+      if (matchPrice !== undefined && matchPrice !== node.unitPrice) {
+        updatedCount++;
+        return {
+          ...node,
+          unitPrice: matchPrice,
+          updatedAt: Date.now(),
+        };
+      }
+      return node;
+    });
+
+    if (updatedCount > 0) {
+      this.recordUndoSnapshot(`به‌روزرسانی قیمت‌های درخت از جدول قیمت`);
+      this.saveNodes(nextNodes);
+    }
+    return { updatedCount };
+  }
+
   // --- CRUD Operations ---
 
   addChild(
@@ -247,7 +384,9 @@ export class AssetStorage {
     name: string,
     unitPrice: number,
     quantity: number,
-    unit: string
+    unit: string,
+    symbol?: string | null,
+    assetType?: string | null
   ): StoredNodeEntity {
     this.recordUndoSnapshot(`افزودن دارایی «${name}»`);
     const nodes = this.getNodes();
@@ -255,6 +394,8 @@ export class AssetStorage {
       id: TreeEngine.generateNodeId(),
       parentId,
       name: name.trim(),
+      symbol: symbol ? symbol.trim() : null,
+      assetType: assetType ? assetType.trim() : null,
       unitPrice,
       quantity,
       unit: unit.trim() || 'واحد',
@@ -263,6 +404,10 @@ export class AssetStorage {
     };
     nodes.push(newNode);
     this.saveNodes(nodes);
+
+    // Auto-update price table
+    this.recordOrUpdatePriceItem(name, unitPrice, unit, symbol, assetType);
+
     return newNode;
   }
 
@@ -271,7 +416,9 @@ export class AssetStorage {
     name: string,
     quantity: number,
     unit: string,
-    unitPrice: number
+    unitPrice: number,
+    symbol?: string | null,
+    assetType?: string | null
   ) {
     this.recordUndoSnapshot(`ویرایش دارایی «${name}»`);
     const nodes = this.getNodes();
@@ -280,12 +427,17 @@ export class AssetStorage {
       nodes[idx] = {
         ...nodes[idx],
         name: name.trim(),
+        symbol: symbol !== undefined ? (symbol ? symbol.trim() : null) : nodes[idx].symbol,
+        assetType: assetType !== undefined ? (assetType ? assetType.trim() : null) : nodes[idx].assetType,
         quantity,
         unit: unit.trim(),
         unitPrice,
         updatedAt: Date.now(),
       };
       this.saveNodes(nodes);
+
+      // Auto-update price table
+      this.recordOrUpdatePriceItem(name, unitPrice, unit, nodes[idx].symbol, nodes[idx].assetType);
     }
   }
 
@@ -369,6 +521,47 @@ export class AssetStorage {
     for (const d of defaults) map.set(d.rawSymbol.toLowerCase(), d);
     for (const c of current) map.set(c.rawSymbol.toLowerCase(), c);
     this.saveSymbols(Array.from(map.values()));
+  }
+
+  // --- Price Reference Table Sync ---
+
+  syncPricesToNodes(): { updatedCount: number } {
+    const prices = this.getPriceTable();
+    const nodes = this.getNodes();
+    let updatedCount = 0;
+
+    const priceBySymbol = new Map<string, AssetPriceItem>();
+    const priceByName = new Map<string, AssetPriceItem>();
+    for (const p of prices) {
+      if (p.symbol) priceBySymbol.set(p.symbol.trim().toLowerCase(), p);
+      priceByName.set(p.name.trim().toLowerCase(), p);
+    }
+
+    const updatedNodes = nodes.map((node) => {
+      let matchedPrice: AssetPriceItem | undefined;
+      if (node.symbol) {
+        matchedPrice = priceBySymbol.get(node.symbol.trim().toLowerCase());
+      }
+      if (!matchedPrice) {
+        matchedPrice = priceByName.get(node.name.trim().toLowerCase());
+      }
+      if (matchedPrice && matchedPrice.unitPrice > 0 && matchedPrice.unitPrice !== node.unitPrice) {
+        updatedCount++;
+        return {
+          ...node,
+          unitPrice: matchedPrice.unitPrice,
+          assetType: node.assetType || matchedPrice.assetType,
+          symbol: node.symbol || matchedPrice.symbol,
+        };
+      }
+      return node;
+    });
+
+    if (updatedCount > 0) {
+      this.recordUndoSnapshot('به‌روزرسانی قیمت‌ها بر اساس جدول مرجع');
+      this.saveNodes(updatedNodes);
+    }
+    return { updatedCount };
   }
 
   // --- Reset & Backup ---
